@@ -1,19 +1,39 @@
 const User = require("../models/users");
-const { generateToken } = require("../authUtils/jwt_token_utils");
+const { generateToken } = require("../utils/jwt_token_utils");
+const { hashPassword } = require("../utils/encryption_utils");
+const { isUsernameAlreadyInUse, isEmailAlreadyInUse } = require("../utils/data_validation");
 
 exports.createUser = async (req, res, next) => {
-    const { username, chestCircumference, armLength, armCircumference, bodyLength, necklineToChest, shoulderWidth, preferredUnit } = req.body;
+    const { username, email, password  } = req.body;
 
     try {
+        if (await isUsernameAlreadyInUse(username)) { 
+            return await Promise.reject({
+                status: 400,
+                message: "This username is already is use",
+            });
+        }
+
+        if (await isEmailAlreadyInUse(email)) {
+            return await Promise.reject({
+              status: 400,
+              message: "This e-mail address is already is use",
+            });
+        }
+
+        if (!password) {
+            return await Promise.reject({
+              status: 400,
+              message: "A password must be specified",
+            });
+        }
+
+        const hashedPassword = await hashPassword(password);
+
         const user = new User({
             username,
-            chestCircumference,
-            armLength,
-            armCircumference,
-            bodyLength,
-            necklineToChest,
-            shoulderWidth,
-            preferredUnit,
+            email,
+            password: hashedPassword
         });
 
         await user.save();
@@ -39,7 +59,13 @@ exports.updateUser = async (req, res, next) => {
     } = req.body;
 
     try {
-        console.log(_id)
+        if (await isUsernameAlreadyInUse(username)) {
+          return await Promise.reject({
+            status: 400,
+            message: "This username is already is use",
+          });
+        }
+
         let userToUpdate = await User.findOneAndUpdate(
             { _id },
             {
@@ -59,14 +85,10 @@ exports.updateUser = async (req, res, next) => {
         }
 
         const token = generateToken(_id);
-
         res.status(201).send({ message: `User ${userToUpdate._id} has been updated`, token });
-  } catch (error ){
-        if (error.status) {
-            res.status(error.status).json({ message: error.message });
-        } else {
-            res.status(500).json({ message: "Internal server error"});
-        }
-  }
+
+    } catch (error ){
+        next(error);
+    }
 };
 

@@ -1,7 +1,9 @@
 exports.handleInvalidInput = (err, req, res, next) => {
-  if (err._msg) {
-    res.status(400).send({ message: `Mongoose error : ${err_message}` });
-  } else {
+  if (err._message) {
+    res.status(400).send({ message: `Mongoose error : ${err._message}` });
+  } else if (err.message) {
+    res.status(err.status).send({ message: err.message });
+  }  else {
     next(err);
   }
 };

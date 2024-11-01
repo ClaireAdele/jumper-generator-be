@@ -1,7 +1,7 @@
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
-const generateToken = (user_id) => {
+exports.generateToken = (user_id) => {
   return JWT.sign(
     {
       user_id: user_id,
@@ -13,8 +13,7 @@ const generateToken = (user_id) => {
   );
 };
 
-const decodeToken = (token) => {
+exports.decodeToken = (token) => {
   return JWT.decode(token, secret);
 };
 
-module.exports = { generateToken, decodeToken };
