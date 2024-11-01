@@ -1,14 +1,17 @@
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
-  username: String,
+  username: {
+    type: String,
+    required: true,
+  },
   chestCircumference: Number,
   armLength: Number,
   armCircumference: Number,
   bodyLength: Number,
   necklineToChest: Number,
   shoulderWidth: Number,
-  preferredUnit: String
+  preferredUnit: String,
 });
 
 const User = mongoose.model("User", UserSchema);

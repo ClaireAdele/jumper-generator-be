@@ -5,7 +5,7 @@ const { generateToken } = require("../../authUtils/jwt_token_utils");
 require("../../mongodb_helper");
 
 
-describe("TESTS FOR /users endpoint", () => {
+describe("TESTS FOR /users ENDPOINT", () => {
   describe("POST - createNewUser", () => {
     beforeEach(async () => {
       await User.deleteMany({});
@@ -13,7 +13,7 @@ describe("TESTS FOR /users endpoint", () => {
 
     test("", async () => {
       const response = await request(app)
-        .post("/users")
+        .post("/api/users")
         .send({
           username: "testUser"
         })
@@ -25,7 +25,7 @@ describe("TESTS FOR /users endpoint", () => {
     });
 
     test("", async () => {
-
+      const response = await request(app).post("/api/users");
     });
   });
 
@@ -47,27 +47,26 @@ describe("TESTS FOR /users endpoint", () => {
 
     test("When the token is valid, the correct user object is updated in the database", async () => {
       const response = await request(app)
-        .put("/users")
+        .put("/api/users")
         .set("Authorization", `Bearer ${token}`)
         .send({
           username: "updatedTestUser",
           chestCircumference: 4,
-          armLength: 3
+          armLength: 3,
         });
       
       [user] = await User.find({ _id: userId });
       expect(response.statusCode).toBe(201);
+      expect(response.body.token).toBeTruthy();
       expect(user.username).toBe("updatedTestUser");
       expect(user.chestCircumference).toBe(4);
       expect(user.armLength).toBe(3);
     });
 
     test("When the token is missing, we get an auth error", async () => {
-      const response = await request(app)
-        .put("/users")
-        .send({
-          username: "updatedTestUser"
-        });
+      const response = await request(app).put("/api/users").send({
+        username: "updatedTestUser",
+      });
 
       expect(response.statusCode).toBe(401);
     });
@@ -76,13 +75,13 @@ describe("TESTS FOR /users endpoint", () => {
       await User.findByIdAndDelete({ _id: userId });
 
       const response = await request(app)
-        .put("/users")
+        .put("/api/users")
         .set("Authorization", `Bearer ${token}`)
         .send({
           username: "updatedTestUser",
         });
 
-      expect(response.statusCode).toBe(500);
+      expect(response.statusCode).toBe(404);
     });
   });
 });
