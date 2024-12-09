@@ -7,7 +7,7 @@ describe("TESTS FOR Users SCHEMA", () => {
        await User.deleteMany({});
      });
     
-    test("A User is created in teh database when the relevant fields on the schema are set correctly", async () => {
+    test("A User is created in the database when the relevant fields on the schema are set correctly", async () => {
         const user = new User({
             username: "testUser",
             email: "test@email.com",
