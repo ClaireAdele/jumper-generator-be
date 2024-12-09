@@ -1,6 +1,7 @@
 const app = require("../../app");
 const request = require("supertest");
 const User = require("../../models/users");
+const bcrypt = require("bcrypt");
 const { generateToken } = require("../../utils/jwt_token_utils");
 require("../../mongodb_helper");
 
@@ -36,6 +37,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
       const [createdUser] = await User.find({ username: "testUser" });
 
       expect(createdUser.password).not.toBe("password");
+      expect(await bcrypt.compare("password", createdUser.password)).toBe(true);
     });
 
     test("When required data is missing, the MongoDB error is caught by error handling middleware and thrown correctly with a 400", async () => {
@@ -66,7 +68,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
       expect(response.body.message).toBe("This username is already is use");
     });
 
-    test("When a user with the same username already exists in the database, the server throws a 400 error", async () => {
+    test("When a user with the same email already exists in the database, the server throws a 400 error", async () => {
       await request(app).post("/api/users").send({
         username: "tes_testUser",
         email: "test@email.com",
@@ -145,6 +147,17 @@ describe("TESTS FOR /users ENDPOINT", () => {
       });
 
       expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe("Could not verify token");
+    });
+
+    test("When the token is invalid, an auth error is thrown", async () => {
+      const response = await request(app)
+        .put("/api/users")
+        .set("Authorization", `Bearer invalidToken`)
+        .send({ username: "updatedTestUser" });
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe("Could not verify token");
     });
 
     test("If the user has been deleted from the database, an error is thrown", async () => {

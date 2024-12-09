@@ -7,14 +7,14 @@ describe("TESTS FOR API ERROR HANLDING", () => {
         const response = await request(app).get("/non-existent-route");
 
         expect(response.statusCode).toBe(404);
-        expect(response.body.message).toBe("Not Found - the url entered does not match any content");
+        expect(response.body.message).toBe("Not Found - the the URL /non-existent-route entered does not match any content");
     });
 
     test("Request to existing endpoints with method that aren't supported return lead to 405", async () => {
       const response = await request(app).delete("/api/users");
 
       expect(response.statusCode).toBe(405);
-      expect(response.body.message).toBe("Method not supported");
+      expect(response.body.message).toBe("Method 'DELETE' not supported on '/api/users'");
     });
 
 })

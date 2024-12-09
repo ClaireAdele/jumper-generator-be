@@ -15,14 +15,17 @@ exports.handleUnknownError = (err, req, res, next) => {
 
 //Controller function that handles non-existant urls.
 exports.handleInvalidPath = (req, res, next) => {
-  res
-    .status(404)
-    .send({
-      message: "Not Found - the url entered does not match any content",
-    });
+  res.status(404).send({
+    message:
+      `Not Found - the the URL ${req.originalUrl} entered does not match any content`,
+  });
 };
 
 //Controller function that handles all the invalid method errors.
 exports.handleInvalidMethod = (req, res, next) => {
-  res.status(405).send({ message: "Method not supported" });
+  res
+    .status(405)
+    .send({
+      message: `Method '${req.method}' not supported on '${req.originalUrl}'`,
+    });
 };
