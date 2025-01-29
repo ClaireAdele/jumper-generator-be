@@ -4,25 +4,25 @@ const { hashPassword } = require("../utils/encryption_utils");
 const { isUsernameAlreadyInUse, isEmailAlreadyInUse } = require("../utils/data_validation");
 
 exports.createUser = async (req, res, next) => {
-    const { username, email, password  } = req.body;
+    const { username, email, password } = req.body;
 
     try {
         if (await isUsernameAlreadyInUse(username)) { 
-            return await Promise.reject({
+            throw({
                 status: 400,
                 message: "This username is already is use",
             });
         }
 
         if (await isEmailAlreadyInUse(email)) {
-            return await Promise.reject({
+            throw({
               status: 400,
               message: "This e-mail address is already is use",
             });
         }
 
         if (!password) {
-            return await Promise.reject({
+            throw({
               status: 400,
               message: "A password must be specified",
             });
@@ -60,7 +60,7 @@ exports.updateUser = async (req, res, next) => {
 
     try {
         if (await isUsernameAlreadyInUse(username)) {
-          return await Promise.reject({
+          throw({
             status: 400,
             message: "This username is already is use",
           });
@@ -81,7 +81,7 @@ exports.updateUser = async (req, res, next) => {
         );
 
         if (!userToUpdate) {
-            return await Promise.reject({ status: 404, message: "The user you attempted to update doesn't exist" });
+            throw({ status: 404, message: "The user you attempted to update doesn't exist" });
         }
 
         const token = generateToken(_id);
