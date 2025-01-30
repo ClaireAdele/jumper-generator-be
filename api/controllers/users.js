@@ -8,14 +8,22 @@ exports.getSignedInUser = async (req, res, next) => {
     try {
         const userId = req.user_id;
 
+        if (!userId) { 
+            throw new CustomError("Could not identify user", 401);
+        }
+
         const user = await User.findOne({ _id: userId });
 
-    
+        if (!user) {
+          throw new CustomError("User not found", 404);
+        }
+
+        const token = generateToken(userId);
+        res.status(200).send({ message: "Success!", signedInUserData: user, token: token });
 
     } catch(error) { 
         next(error);
     }
-   
 }
 
 exports.createUser = async (req, res, next) => {
