@@ -3,6 +3,20 @@ const { generateToken } = require("../utils/jwt_token_utils");
 const { hashPassword } = require("../utils/encryption_utils");
 const { isUsernameAlreadyInUse, isEmailAlreadyInUse } = require("../utils/data_validation");
 
+exports.getSignedInUser = async (req, res, next) => {
+    try {
+        const userId = req.user_id;
+
+        const user = await User.findOne({ _id: userId });
+
+    
+
+    } catch(error) { 
+        next(error);
+    }
+   
+}
+
 exports.createUser = async (req, res, next) => {
     const { username, email, password } = req.body;
 

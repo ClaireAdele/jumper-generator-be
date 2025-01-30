@@ -13,7 +13,6 @@ const tokenChecker = (req, res, next) => {
       console.log(err);
       res.status(401).json({ message: "Could not verify token" });
     } else {
-        
       req.user_id = payload.user_id;
       next();
     }
