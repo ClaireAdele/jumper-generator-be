@@ -2,6 +2,7 @@ const User = require("../models/users");
 const { generateToken } = require("../utils/jwt_token_utils");
 const { hashPassword } = require("../utils/encryption_utils");
 const { isUsernameAlreadyInUse, isEmailAlreadyInUse } = require("../utils/data_validation");
+const { CustomError } = require("../errorHandling/customError");
 
 exports.getSignedInUser = async (req, res, next) => {
     try {
@@ -22,24 +23,15 @@ exports.createUser = async (req, res, next) => {
 
     try {
         if (await isUsernameAlreadyInUse(username)) { 
-            throw({
-                status: 400,
-                message: "This username is already is use",
-            });
+            throw new CustomError( "This username is already is use", 400 );
         }
 
         if (await isEmailAlreadyInUse(email)) {
-            throw({
-              status: 400,
-              message: "This e-mail address is already is use",
-            });
+            throw new CustomError( "This e-mail address is already is use", 400 );
         }
 
         if (!password) {
-            throw({
-              status: 400,
-              message: "A password must be specified",
-            });
+             throw new CustomError("A password must be specified", 400);
         }
 
         const hashedPassword = await hashPassword(password);
@@ -74,10 +66,7 @@ exports.updateUser = async (req, res, next) => {
 
     try {
         if (await isUsernameAlreadyInUse(username)) {
-          throw({
-            status: 400,
-            message: "This username is already is use",
-          });
+          throw new CustomError("This username is already is use", 400);
         }
 
         let userToUpdate = await User.findOneAndUpdate(
@@ -95,7 +84,10 @@ exports.updateUser = async (req, res, next) => {
         );
 
         if (!userToUpdate) {
-            throw({ status: 404, message: "The user you attempted to update doesn't exist" });
+            throw new CustomError(
+              "The user you attempted to update doesn't exist",
+              404
+            );
         }
 
         const token = generateToken(_id);
