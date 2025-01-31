@@ -14,7 +14,7 @@ exports.generateToken = (userId) => {
         user_id: userId,
         iat: Math.floor(Date.now() / 1000),
 
-        exp: Math.floor(Date.now() / 1000) + 10 * 60, // 10 minutes expiry
+        exp: Math.floor(Date.now() / 1000) + 10 * 60, 
       },
       secret,
       { algorithm: "HS256" } // Explicitly define a strong algorithm
