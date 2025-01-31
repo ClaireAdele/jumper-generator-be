@@ -90,6 +90,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
     let token;
     let user;
     let userId;
+    let cookie;
 
     beforeEach(async () => {
       user = new User({
@@ -101,6 +102,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
       await user.save();
       token = generateToken(user._id);
       userId = user._id;
+      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
     });
 
     afterEach(async () => { 
@@ -110,7 +112,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
     test("When the token is valid, the correct user object is updated in the database", async () => {
       const response = await request(app)
         .put("/api/users")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Cookie", cookie)
         .send({
           username: "updatedTestUser",
           chestCircumference: 4,
@@ -128,7 +130,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
     test("When a user with the same username already exists in the database, the server throws a 400 error", async () => {
       const response = await request(app)
         .put("/api/users")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Cookie", cookie)
         .send({
           username: "testUser",
           email: "test@email.com",
@@ -153,7 +155,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
     test("When the token is invalid, an auth error is thrown", async () => {
       const response = await request(app)
         .put("/api/users")
-        .set("Authorization", `Bearer invalidToken`)
+        .set("Cookie", "Bearer invalidToken")
         .send({ username: "updatedTestUser" });
 
       expect(response.statusCode).toBe(401);
@@ -165,7 +167,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
 
       const response = await request(app)
         .put("/api/users")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Cookie", cookie)
         .send({
           username: "updatedTestUser",
           email: "test@email.com",
