@@ -24,7 +24,18 @@ const signInUser = async (req, res, next) => {
           maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
         });
 
-        res.status(201).json({ message: "User signed-in successfully" });
+        const signedInUser = {
+          email: user.email,
+          username: user.username,
+          chestCircumference: user.chestCircumference ?? undefined,
+          armLength: user.armLength ?? undefined,
+          armCircumference: user.armCircumference ?? undefined,
+          bodyLength: user.bodyLength ?? undefined,
+          shoulderWidth: user.shoulderWidth ?? undefined,
+          preferredUnit: user.preferredUnit ?? undefined
+        };
+
+        res.status(201).json({ message: "User signed-in successfully", signedInUser: signedInUser });
     } catch (error) {
         next(error);
     }

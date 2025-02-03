@@ -19,7 +19,27 @@ exports.getSignedInUser = async (req, res, next) => {
         }
 
         const token = generateToken(userId);
-        res.status(200).send({ message: "Success!", signedInUserData: user, token: token });
+
+        res.cookie("token", token, {
+          httpOnly: true,
+          sameSite: "Lax",
+          maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
+        });
+
+        const signedInUser = {
+          email: user.email,
+          username: user.username,
+          chestCircumference: user.chestCircumference ?? undefined,
+          armLength: user.armLength ?? undefined,
+          armCircumference: user.armCircumference ?? undefined,
+          bodyLength: user.bodyLength ?? undefined,
+          shoulderWidth: user.shoulderWidth ?? undefined,
+          preferredUnit: user.preferredUnit ?? undefined,
+        };
+        //need to remove password from response here
+        res
+          .status(200)
+          .send({ message: "Success!", signedInUser });
 
     } catch(error) { 
         next(error);
@@ -61,13 +81,16 @@ exports.createUser = async (req, res, next) => {
 exports.updateUser = async (req, res, next) => {
     const _id = req.user_id;
 
+    //Potential exception here - what if the user doesn't set out of change all these things? 
+    // I will need to make sure that from the back-end the data coming in is complete,
+    // including a copy of unchanged data if I leave this function here as is.
+    
     const {
         username,
         chestCircumference,
         armLength,
         armCircumference,
         bodyLength,
-        necklineToChest,
         shoulderWidth,
         preferredUnit,
     } = req.body;
@@ -99,7 +122,14 @@ exports.updateUser = async (req, res, next) => {
         }
 
         const token = generateToken(_id);
-        res.status(201).send({ message: `User ${userToUpdate._id} has been updated`, token });
+
+        res.cookie("token", token, {
+          httpOnly: true,
+          sameSite: "Lax",
+          maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
+        });
+
+        res.status(201).send({ message: `User ${userToUpdate._id} has been updated` });
 
     } catch (error ){
         next(error);

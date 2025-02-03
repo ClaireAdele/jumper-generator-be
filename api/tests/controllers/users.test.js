@@ -121,7 +121,6 @@ describe("TESTS FOR /users ENDPOINT", () => {
       
       [user] = await User.find({ _id: userId });
       expect(response.statusCode).toBe(201);
-      expect(response.body.token).toBeTruthy();
       expect(user.username).toBe("updatedTestUser");
       expect(user.chestCircumference).toBe(4);
       expect(user.armLength).toBe(3);
