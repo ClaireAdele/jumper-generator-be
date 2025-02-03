@@ -17,7 +17,14 @@ const signInUser = async (req, res, next) => {
         }
 
         const token = generateToken(user._id);
-        res.status(201).json({ token: token, message: "User signed-in successfully" });
+
+        res.cookie("token", token, {
+          httpOnly: true,
+          sameSite: "Lax",
+          maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
+        });
+
+        res.status(201).json({ message: "User signed-in successfully" });
     } catch (error) {
         next(error);
     }
