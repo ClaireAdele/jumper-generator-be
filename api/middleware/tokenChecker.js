@@ -5,10 +5,10 @@ const tokenChecker = (req, res, next) => {
 
   JWT.verify(token, process.env.JWT_SECRET, (err, payload) => {
     if (err) {
-      console.log(err);
       res.status(401).json({ message: "Could not verify token" });
     } else {
-      req.user_id = payload.user_id;
+      req.userId = payload.user_id;
+      console.log(req.userId)
       next();
     }
   });
