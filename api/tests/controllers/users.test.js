@@ -126,6 +126,29 @@ describe("TESTS FOR /users ENDPOINT", () => {
       expect(user.armLength).toBe(3);
     });
 
+    test("When the token is valid, the server responds with a 201 and sends back a success message as well as the updated user data", async () => {
+      const response = await request(app)
+        .put("/api/users")
+        .set("Cookie", cookie)
+        .send({
+          username: "updatedTestUser",
+          chestCircumference: 4,
+          armLength: 3,
+        });
+
+      [user] = await User.find({ _id: userId });
+      expect(response.statusCode).toBe(201);
+      expect(response.body.message).toBe(
+        `User ${user._id} has been updated`
+      );
+      expect(response.body.updatedUser).toEqual({
+        username: "updatedTestUser",
+        email: "test@email.com",
+        chestCircumference: 4,
+        armLength: 3,
+      });
+    });
+
     test("When a user with the same username already exists in the database, the server throws a 400 error", async () => {
       const response = await request(app)
         .put("/api/users")

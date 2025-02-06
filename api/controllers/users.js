@@ -1,7 +1,7 @@
 const User = require("../models/users");
 const { generateToken } = require("../utils/jwt_token_utils");
 const { hashPassword } = require("../utils/encryption_utils");
-const { isUsernameAlreadyInUse, isEmailAlreadyInUse } = require("../utils/data_validation");
+const { isUsernameAlreadyInUse, isEmailAlreadyInUse, formatUserData } = require("../utils/data_validation");
 const { CustomError } = require("../errorHandling/customError");
 
 exports.getSignedInUser = async (req, res, next) => {
@@ -26,16 +26,7 @@ exports.getSignedInUser = async (req, res, next) => {
           maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
         });
 
-        const signedInUser = {
-          email: user.email,
-          username: user.username,
-          chestCircumference: user.chestCircumference ?? undefined,
-          armLength: user.armLength ?? undefined,
-          armCircumference: user.armCircumference ?? undefined,
-          bodyLength: user.bodyLength ?? undefined,
-          shoulderWidth: user.shoulderWidth ?? undefined,
-          preferredUnit: user.preferredUnit ?? undefined,
-        };
+        const signedInUser = formatUserData(user);
         //need to remove password from response here
         res
           .status(200)
@@ -110,7 +101,8 @@ exports.updateUser = async (req, res, next) => {
                 bodyLength,
                 shoulderWidth,
                 preferredUnit
-            }
+            },
+            { new: true }
         );
 
         if (!userToUpdate) {
@@ -128,7 +120,9 @@ exports.updateUser = async (req, res, next) => {
           maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
         });
 
-        res.status(201).send({ message: `User ${userToUpdate._id} has been updated` });
+        const updatedUser = formatUserData(userToUpdate);
+
+        res.status(201).send({ message: `User ${userToUpdate._id} has been updated`, updatedUser });
 
     } catch (error) {
         next(error);
