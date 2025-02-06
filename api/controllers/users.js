@@ -1,12 +1,12 @@
 const User = require("../models/users");
 const { generateToken } = require("../utils/jwt_token_utils");
 const { hashPassword } = require("../utils/encryption_utils");
-const { isUsernameAlreadyInUse, isEmailAlreadyInUse } = require("../utils/data_validation");
+const { isUsernameAlreadyInUse, isEmailAlreadyInUse, formatUserData } = require("../utils/data_validation");
 const { CustomError } = require("../errorHandling/customError");
 
 exports.getSignedInUser = async (req, res, next) => {
     try {
-        const userId = req.user_id;
+        const userId = req.userId;
 
         if (!userId) { 
             throw new CustomError("Could not identify user", 401);
@@ -26,20 +26,11 @@ exports.getSignedInUser = async (req, res, next) => {
           maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
         });
 
-        const signedInUser = {
-          email: user.email,
-          username: user.username,
-          chestCircumference: user.chestCircumference ?? undefined,
-          armLength: user.armLength ?? undefined,
-          armCircumference: user.armCircumference ?? undefined,
-          bodyLength: user.bodyLength ?? undefined,
-          shoulderWidth: user.shoulderWidth ?? undefined,
-          preferredUnit: user.preferredUnit ?? undefined,
-        };
+        const signedInUser = formatUserData(user);
         //need to remove password from response here
         res
           .status(200)
-          .send({ message: "Success!", signedInUser });
+          .send({ signedInUser });
 
     } catch(error) { 
         next(error);
@@ -79,7 +70,7 @@ exports.createUser = async (req, res, next) => {
 };
 
 exports.updateUser = async (req, res, next) => {
-    const _id = req.user_id;
+    const _id = req.userId;
 
     //Potential exception here - what if the user doesn't set out of change all these things? 
     // I will need to make sure that from the back-end the data coming in is complete,
@@ -108,10 +99,10 @@ exports.updateUser = async (req, res, next) => {
                 armLength,
                 armCircumference,
                 bodyLength,
-                necklineToChest,
                 shoulderWidth,
                 preferredUnit
-            }
+            },
+            { new: true }
         );
 
         if (!userToUpdate) {
@@ -129,9 +120,11 @@ exports.updateUser = async (req, res, next) => {
           maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
         });
 
-        res.status(201).send({ message: `User ${userToUpdate._id} has been updated` });
+        const updatedUser = formatUserData(userToUpdate);
 
-    } catch (error ){
+        res.status(201).send({ message: `User ${userToUpdate._id} has been updated`, updatedUser });
+
+    } catch (error) {
         next(error);
     }
 };
