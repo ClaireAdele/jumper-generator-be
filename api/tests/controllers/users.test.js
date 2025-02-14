@@ -7,6 +7,10 @@ require("../../mongodb_helper");
 
 
 describe("TESTS FOR /users ENDPOINT", () => {
+  afterAll( async () => {
+    User.deleteMany();
+  });
+
   describe("POST - createNewUser", () => {
     beforeEach(async () => {
       await User.deleteMany({});

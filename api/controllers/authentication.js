@@ -6,9 +6,9 @@ const signInUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
-        const user = await User.findOne({ email: email });
+        const user = await User.findOne({ email });
 
-        if (!user) { 
+        if (!user) {
             throw ({ status: 400, message: "Invalid e-mail or password" });
         }
        
@@ -35,7 +35,7 @@ const signInUser = async (req, res, next) => {
           preferredUnit: user.preferredUnit ?? undefined
         };
 
-        res.status(201).json({ message: "User signed-in successfully", signedInUser: signedInUser });
+        res.status(201).json({ message: "User signed-in successfully", signedInUser });
     } catch (error) {
         next(error);
     }
