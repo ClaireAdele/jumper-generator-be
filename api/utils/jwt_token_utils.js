@@ -9,6 +9,8 @@ exports.generateToken = (userId) => {
         throw new CustomError("Invalid user ID format", 401);
     }
 
+    //maybe check the userId exists in my database as well. 
+
     return JWT.sign(
       {
         user_id: userId,

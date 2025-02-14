@@ -1,4 +1,5 @@
 const User = require("../models/users");
+const { CustomError } = require("../errorHandling/customError");
 const { comparePasswords } = require("../utils/encryption_utils");
 const { generateToken } = require("../utils/jwt_token_utils");
 
@@ -6,14 +7,18 @@ const signInUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
-        const user = await User.findOne({ email: email });
+        if (!email || !password) {
+          throw new CustomError("Invalid e-mail or password", 400);
+        }
 
-        if (!user) { 
-            throw ({ status: 400, message: "Invalid e-mail or password" });
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            throw new CustomError("Invalid e-mail or password", 400);
         }
        
-        if (!await comparePasswords(password, user.password)) { 
-            throw { status: 400, message: "Invalid e-mail or password" };
+        if (!await comparePasswords(password, user.password)) {
+              throw new CustomError("Invalid e-mail or password", 400);
         }
 
         const token = generateToken(user._id);
@@ -24,7 +29,18 @@ const signInUser = async (req, res, next) => {
           maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
         });
 
-        res.status(201).json({ message: "User signed-in successfully" });
+        const signedInUser = {
+          email: user.email,
+          username: user.username,
+          chestCircumference: user.chestCircumference ?? undefined,
+          armLength: user.armLength ?? undefined,
+          armCircumference: user.armCircumference ?? undefined,
+          bodyLength: user.bodyLength ?? undefined,
+          shoulderWidth: user.shoulderWidth ?? undefined,
+          preferredUnit: user.preferredUnit ?? undefined
+        };
+
+        res.status(201).json({ message: "User signed-in successfully", signedInUser });
     } catch (error) {
         next(error);
     }

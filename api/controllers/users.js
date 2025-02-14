@@ -1,12 +1,12 @@
 const User = require("../models/users");
 const { generateToken } = require("../utils/jwt_token_utils");
 const { hashPassword } = require("../utils/encryption_utils");
-const { isUsernameAlreadyInUse, isEmailAlreadyInUse } = require("../utils/data_validation");
+const { isUsernameAlreadyInUse, isEmailAlreadyInUse, formatUserData } = require("../utils/data_validation");
 const { CustomError } = require("../errorHandling/customError");
 
 exports.getSignedInUser = async (req, res, next) => {
     try {
-        const userId = req.user_id;
+        const userId = req.userId;
 
         if (!userId) { 
             throw new CustomError("Could not identify user", 401);
@@ -19,7 +19,18 @@ exports.getSignedInUser = async (req, res, next) => {
         }
 
         const token = generateToken(userId);
-        res.status(200).send({ message: "Success!", signedInUserData: user, token: token });
+
+        res.cookie("token", token, {
+          httpOnly: true,
+          sameSite: "Lax",
+          maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
+        });
+
+        const signedInUser = formatUserData(user);
+        //need to remove password from response here
+        res
+          .status(200)
+          .send({ signedInUser });
 
     } catch(error) { 
         next(error);
@@ -59,15 +70,18 @@ exports.createUser = async (req, res, next) => {
 };
 
 exports.updateUser = async (req, res, next) => {
-    const _id = req.user_id;
+    const _id = req.userId;
 
+    //Potential exception here - what if the user doesn't set out of change all these things? 
+    // I will need to make sure that from the back-end the data coming in is complete,
+    // including a copy of unchanged data if I leave this function here as is.
+    
     const {
         username,
         chestCircumference,
         armLength,
         armCircumference,
         bodyLength,
-        necklineToChest,
         shoulderWidth,
         preferredUnit,
     } = req.body;
@@ -85,10 +99,10 @@ exports.updateUser = async (req, res, next) => {
                 armLength,
                 armCircumference,
                 bodyLength,
-                necklineToChest,
                 shoulderWidth,
                 preferredUnit
-            }
+            },
+            { new: true }
         );
 
         if (!userToUpdate) {
@@ -99,9 +113,18 @@ exports.updateUser = async (req, res, next) => {
         }
 
         const token = generateToken(_id);
-        res.status(201).send({ message: `User ${userToUpdate._id} has been updated`, token });
 
-    } catch (error ){
+        res.cookie("token", token, {
+          httpOnly: true,
+          sameSite: "Lax",
+          maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
+        });
+
+        const updatedUser = formatUserData(userToUpdate);
+
+        res.status(201).send({ message: `User ${userToUpdate._id} has been updated`, updatedUser });
+
+    } catch (error) {
         next(error);
     }
 };

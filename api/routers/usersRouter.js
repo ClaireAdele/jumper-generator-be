@@ -5,7 +5,7 @@ const { createUser, updateUser, getSignedInUser } = require("../controllers/user
 const { handleInvalidMethod } = require("../errorHandling/errorHandlers");
 
 
-userRouter.get("/signed-in-user", tokenChecker, getSignedInUser);
+userRouter.get("/me", tokenChecker, getSignedInUser);
 userRouter.post("/", createUser);
 userRouter.put("/", tokenChecker, updateUser);
 
