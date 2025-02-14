@@ -1,4 +1,5 @@
 const User = require("../models/users");
+const { CustomError } = require("../errorHandling/customError");
 const { comparePasswords } = require("../utils/encryption_utils");
 const { generateToken } = require("../utils/jwt_token_utils");
 
@@ -6,14 +7,18 @@ const signInUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
+        if (!email || !password) {
+          throw new CustomError("Invalid e-mail or password", 400);
+        }
+
         const user = await User.findOne({ email });
 
         if (!user) {
-            throw ({ status: 400, message: "Invalid e-mail or password" });
+            throw new CustomError("Invalid e-mail or password", 400);
         }
        
-        if (!await comparePasswords(password, user.password)) { 
-            throw { status: 400, message: "Invalid e-mail or password" };
+        if (!await comparePasswords(password, user.password)) {
+              throw new CustomError("Invalid e-mail or password", 400);
         }
 
         const token = generateToken(user._id);

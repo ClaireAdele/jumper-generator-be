@@ -2,7 +2,6 @@ const app = require("../../app");
 const request = require("supertest");
 const User = require("../../models/users");
 const { hashPassword } = require("../../utils/encryption_utils");
-const { generateToken } = require("../../utils/jwt_token_utils");
 require("../../mongodb_helper");
 
 describe("TESTS FOR /authentication ENDPOINT", () => {
@@ -33,6 +32,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
                 password: "password",
               });
             
+            expect(response.status).toBe(201);
             expect(response.body).toEqual({
                 message: "User signed-in successfully",
                 signedInUser: {
@@ -48,10 +48,23 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
                 password: "password",
                 });
             
+            expect(response.status).toBe(400);
             expect(response.body).toEqual({
                 message: "Invalid e-mail or password",
             });
         });
+
+        test("When the password is unspecified, the user cannot sign-in", async () => {
+          const response = await request(app).post("/api/authentication").send({
+            email: "auth_test@email.com",
+          });
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual({
+            message: "Invalid e-mail or password",
+          });
+        });
+
         test("When the password is incorrect, the user cannot sign-in", async () => {
             const response = await request(app)
                 .post("/api/authentication")
@@ -59,7 +72,20 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
                     email: "auth_test@email.com",
                     password: "incorrect_password",
                 });
-            
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual({
+                message: "Invalid e-mail or password",
+            });
+        });
+
+        test("When the user does not exist, authentication fails", async () => {
+          const response = await request(app).post("/api/authentication").send({
+            email: "nonexistent@email.com",
+            password: "password",
+          });
+
+            expect(response.status).toBe(400);
             expect(response.body).toEqual({
                 message: "Invalid e-mail or password",
             });
