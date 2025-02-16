@@ -1,13 +1,14 @@
 const express = require("express");
 const userRouter = express.Router();
 const tokenChecker = require("../middleware/tokenChecker");
-const { createUser, updateUser, getSignedInUser } = require("../controllers/users"); 
+const { createUser, updateUser, getSignedInUser, deleteUserAccount } = require("../controllers/users"); 
 const { handleInvalidMethod } = require("../errorHandling/errorHandlers");
 
 
-userRouter.get("/me", tokenChecker, getSignedInUser);
 userRouter.post("/", createUser);
-userRouter.put("/", tokenChecker, updateUser);
+userRouter.get("/me", tokenChecker, getSignedInUser);
+userRouter.put("/me", tokenChecker, updateUser);
+userRouter.delete("/me", tokenChecker, deleteUserAccount);
 
 userRouter.use("/", handleInvalidMethod);
 
