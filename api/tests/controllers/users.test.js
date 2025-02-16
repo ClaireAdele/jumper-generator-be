@@ -40,6 +40,16 @@ describe("TESTS FOR /users ENDPOINT", () => {
       expect(await bcrypt.compare("password", createdUser.password)).toBe(true);
     });
 
+    test("When the password is missing, it is not possible to create a user in the database", async () => {
+      const response = await request(app).post("/api/users").send({
+        username: "testUser",
+        email: "test@email.com",
+      });
+
+      expect(response.body).toEqual({ message: "A password must be specified" });
+      expect(response.status).toBe(400);
+    })
+
     test("When required data is missing, the MongoDB error is caught by error handling middleware and thrown correctly with a 400", async () => {
       const response = await request(app).post("/api/users").send({
         password: "password",
