@@ -262,14 +262,14 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
     });
   });
 
-  describe("DELETE - deleteAccount", () => {
+  describe("DELETE - deleteUserAccount", () => {
     let token;
     let testUser3;
     let testUserId3;
     let cookie;
 
     beforeEach(async () => {
-      testUser2 = new User({
+      testUser3 = new User({
         username: "testUser3",
         email: "test3@email.com",
         password: "password",
@@ -288,10 +288,25 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
     test("When the token is valid and the user exists, delete all user data from the database", async () => {
       const response = await request(app)
         .delete("/api/users/me")
-        .set("Cookie", cookie);
-      
+        .set("Cookie", cookie)
+
       expect(response.status).toBe(201);
       expect(response.body).toEqual({ message: "User successfully deleted" });
+    });
+
+    test("When the token is invalid, the account deletion attempt is rejected", async () => {
+      const response = await request(app)
+        .delete("/api/users/me")
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Could not verify token" });
+    });
+
+    test("When the token is invalid, the account deletion attempt is rejected", async () => {
+      const response = await request(app).delete("/api/users/me");
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Could not verify token" });
     });
   });
 });

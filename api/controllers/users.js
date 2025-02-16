@@ -129,3 +129,25 @@ exports.updateUser = async (req, res, next) => {
     }
 };
 
+exports.deleteUserAccount = async (req, res, next) => { 
+    try { 
+        const userId = req.userId;
+
+        if (!userId) {
+            throw new CustomError("Could not identify user", 401);
+        }
+ 
+        const isUserDeleted = await User.deleteOne({ _id: userId });
+
+        if (isUserDeleted.deletedCount == 1) {
+            res.status(201).send({ message: "User successfully deleted" });
+        } else { 
+            throw new CustomError ("Could not delete user, try again later", 500)
+        }
+    }
+    catch (error) { 
+        console.log(error)
+        next(error);
+    }
+}
+

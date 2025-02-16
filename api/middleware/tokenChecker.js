@@ -1,5 +1,6 @@
 const JWT = require("jsonwebtoken");
 
+// TODO: refactor with Try/Catch to improve this here
 const tokenChecker = (req, res, next) => {
   const token = req.cookies?.token;
 
