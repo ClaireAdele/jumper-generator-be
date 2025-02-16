@@ -7,10 +7,6 @@ require("../../mongodb_helper");
 
 
 describe("TESTS FOR /users ENDPOINT", () => {
-  afterAll( async () => {
-    User.deleteMany();
-  });
-
   describe("POST - createNewUser", () => {
     beforeEach(async () => {
       await User.deleteMany({});
@@ -109,9 +105,9 @@ describe("TESTS FOR /users ENDPOINT", () => {
       cookie = `token=${token}; HttpOnly; Path=/; Secure`;
     });
 
-    afterEach(async () => { 
+    afterEach(async () => {
       await User.deleteMany();
-    })
+    });
 
     test("When the token is valid, the correct user object is updated in the database", async () => {
       const response = await request(app)
@@ -204,6 +200,66 @@ describe("TESTS FOR /users ENDPOINT", () => {
       expect(response.body.message).toBe(
         "The user you attempted to update doesn't exist"
       );
+    });
+  });
+});
+
+describe("TESTS FOR /users/me ENDPOINT", () => {
+  let token;
+  let testUser2;
+  let testUserId2;
+  let cookie;
+
+  beforeEach(async () => {
+    testUser2 = new User({
+      username: "testUser2",
+      email: "test2@email.com",
+      password: "password",
+    });
+
+    await testUser2.save();
+    token = generateToken(testUser2._id);
+    testUserId2 = testUser2._id;
+    cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+  });
+
+  afterEach(async () => {
+    await User.deleteMany();
+  });
+  
+  test("When the token is valid, the server responds with a status code 200 and the logged-in user object", async () => {
+    const response = await request(app)
+      .get("/api/users/me")
+      .set("Cookie", cookie);
+    
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      signedInUser: {
+        username: "testUser2",
+        email: "test2@email.com",
+      },
+    });
+  });
+
+  test("If the token is missing, the server responds with a status code 400 and an error", async () => {
+    const response = await request(app)
+      .get("/api/users/me")
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      message: "Could not verify token",
+    });
+  });
+
+  test("If the user who's id is on the token does not exist, the server responds with a status code 404 and an error", async () => {
+    await User.deleteOne({ _id: testUserId2 });
+    const response = await request(app)
+      .get("/api/users/me")
+      .set("Cookie", cookie);;
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      message: "User not found",
     });
   });
 });
