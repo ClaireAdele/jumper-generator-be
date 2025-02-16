@@ -27,7 +27,7 @@ exports.getSignedInUser = async (req, res, next) => {
         });
 
         const signedInUser = formatUserData(user);
-        //need to remove password from response here
+        
         res
           .status(200)
           .send({ signedInUser });
