@@ -7,7 +7,7 @@ const { handleInvalidMethod } = require("../errorHandling/errorHandlers");
 
 userRouter.get("/me", tokenChecker, getSignedInUser);
 userRouter.post("/", createUser);
-userRouter.put("/", tokenChecker, updateUser);
+userRouter.put("/me", tokenChecker, updateUser);
 
 userRouter.use("/", handleInvalidMethod);
 

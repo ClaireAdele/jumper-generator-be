@@ -85,7 +85,9 @@ describe("TESTS FOR /users ENDPOINT", () => {
       expect(response.body.message).toBe("This e-mail address is already is use");
     });
   });
+});
 
+describe("TESTS FOR /users/me ENDPOINT", () => {
   describe("PUT - updateUser", () => {
     let token;
     let user;
@@ -111,14 +113,14 @@ describe("TESTS FOR /users ENDPOINT", () => {
 
     test("When the token is valid, the correct user object is updated in the database", async () => {
       const response = await request(app)
-        .put("/api/users")
+        .put("/api/users/me")
         .set("Cookie", cookie)
         .send({
           username: "updatedTestUser",
           chestCircumference: 4,
           armLength: 3,
         });
-      
+
       [user] = await User.find({ _id: userId });
       expect(response.statusCode).toBe(201);
       expect(user.username).toBe("updatedTestUser");
@@ -128,7 +130,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
 
     test("When the token is valid, the server responds with a 201 and sends back a success message as well as the updated user data", async () => {
       const response = await request(app)
-        .put("/api/users")
+        .put("/api/users/me")
         .set("Cookie", cookie)
         .send({
           username: "updatedTestUser",
@@ -138,9 +140,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
 
       [user] = await User.find({ _id: userId });
       expect(response.statusCode).toBe(201);
-      expect(response.body.message).toBe(
-        `User ${user._id} has been updated`
-      );
+      expect(response.body.message).toBe(`User ${user._id} has been updated`);
       expect(response.body.updatedUser).toEqual({
         username: "updatedTestUser",
         email: "test@email.com",
@@ -151,7 +151,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
 
     test("When a user with the same username already exists in the database, the server throws a 400 error", async () => {
       const response = await request(app)
-        .put("/api/users")
+        .put("/api/users/me")
         .set("Cookie", cookie)
         .send({
           username: "testUser",
@@ -166,7 +166,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
     });
 
     test("When the token is missing, we get an auth error", async () => {
-      const response = await request(app).put("/api/users").send({
+      const response = await request(app).put("/api/users/me").send({
         username: "updatedTestUser",
       });
 
@@ -176,7 +176,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
 
     test("When the token is invalid, an auth error is thrown", async () => {
       const response = await request(app)
-        .put("/api/users")
+        .put("/api/users/me")
         .set("Cookie", "Bearer invalidToken")
         .send({ username: "updatedTestUser" });
 
@@ -188,7 +188,7 @@ describe("TESTS FOR /users ENDPOINT", () => {
       await User.findByIdAndDelete({ _id: userId });
 
       const response = await request(app)
-        .put("/api/users")
+        .put("/api/users/me")
         .set("Cookie", cookie)
         .send({
           username: "updatedTestUser",
@@ -202,64 +202,96 @@ describe("TESTS FOR /users ENDPOINT", () => {
       );
     });
   });
-});
 
-describe("TESTS FOR /users/me ENDPOINT", () => {
-  let token;
-  let testUser2;
-  let testUserId2;
-  let cookie;
+  describe("GET - getSignedInUser", () => {
+    let token;
+    let testUser2;
+    let testUserId2;
+    let cookie;
 
-  beforeEach(async () => {
-    testUser2 = new User({
-      username: "testUser2",
-      email: "test2@email.com",
-      password: "password",
-    });
-
-    await testUser2.save();
-    token = generateToken(testUser2._id);
-    testUserId2 = testUser2._id;
-    cookie = `token=${token}; HttpOnly; Path=/; Secure`;
-  });
-
-  afterEach(async () => {
-    await User.deleteMany();
-  });
-  
-  test("When the token is valid, the server responds with a status code 200 and the logged-in user object", async () => {
-    const response = await request(app)
-      .get("/api/users/me")
-      .set("Cookie", cookie);
-    
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({
-      signedInUser: {
+    beforeEach(async () => {
+      testUser2 = new User({
         username: "testUser2",
         email: "test2@email.com",
-      },
+        password: "password",
+      });
+
+      await testUser2.save();
+      token = generateToken(testUser2._id);
+      testUserId2 = testUser2._id;
+      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+    });
+
+    afterEach(async () => {
+      await User.deleteMany();
+    });
+
+    test("When the token is valid, the server responds with a status code 200 and the logged-in user object", async () => {
+      const response = await request(app)
+        .get("/api/users/me")
+        .set("Cookie", cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        signedInUser: {
+          username: "testUser2",
+          email: "test2@email.com",
+        },
+      });
+    });
+
+    test("If the token is missing, the server responds with a status code 400 and an error", async () => {
+      const response = await request(app).get("/api/users/me");
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({
+        message: "Could not verify token",
+      });
+    });
+
+    test("If the user who's id is on the token does not exist, the server responds with a status code 404 and an error", async () => {
+      await User.deleteOne({ _id: testUserId2 });
+      const response = await request(app)
+        .get("/api/users/me")
+        .set("Cookie", cookie);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        message: "User not found",
+      });
     });
   });
 
-  test("If the token is missing, the server responds with a status code 400 and an error", async () => {
-    const response = await request(app)
-      .get("/api/users/me")
+  describe("DELETE - deleteAccount", () => {
+    let token;
+    let testUser3;
+    let testUserId3;
+    let cookie;
 
-    expect(response.status).toBe(401);
-    expect(response.body).toEqual({
-      message: "Could not verify token",
+    beforeEach(async () => {
+      testUser2 = new User({
+        username: "testUser3",
+        email: "test3@email.com",
+        password: "password",
+      });
+
+      await testUser3.save();
+      token = generateToken(testUser3._id);
+      testUserId3 = testUser3._id;
+      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
     });
-  });
 
-  test("If the user who's id is on the token does not exist, the server responds with a status code 404 and an error", async () => {
-    await User.deleteOne({ _id: testUserId2 });
-    const response = await request(app)
-      .get("/api/users/me")
-      .set("Cookie", cookie);;
+    afterEach(async () => {
+      await User.deleteMany();
+    });
 
-    expect(response.status).toBe(404);
-    expect(response.body).toEqual({
-      message: "User not found",
+    test("When the token is valid and the user exists, delete all user data from the database", async () => {
+      const response = await request(app)
+        .delete("/api/users/me")
+        .set("Cookie", cookie);
+      
+      expect(response.status).toBe(201);
+      expect(response.body).toEqual({ message: "User successfully deleted" });
     });
   });
 });
