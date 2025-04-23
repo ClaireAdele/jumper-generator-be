@@ -8,6 +8,17 @@ jobs:
   test:
     runs-on: macos-latest
 
+    services:
+      mongo:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -23,4 +34,6 @@ jobs:
 
       - name: Run Jest tests
         run: npm run test
-        working-directory: ./api  # Make sure this runs Jest
+        working-directory: ./api
+        env:
+          MONGODB_URI: mongodb://0.0.0.0/jumper-generator-test-database  # Make sure this runs Jest
