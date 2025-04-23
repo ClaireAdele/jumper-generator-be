@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use("/api", apiRouter);
-app.all("/*", handleInvalidPath); //need to add error handling for wrong path
+app.all("/*", handleInvalidPath);
 
 app.use(globalErrorHandler);
 
