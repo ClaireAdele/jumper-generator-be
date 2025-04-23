@@ -7,4 +7,5 @@ const authRouter = require("./authRouter");
 apiRouter.use("/users", userRouter);
 apiRouter.use("/authentication", authRouter);
 
+
 module.exports = apiRouter;
