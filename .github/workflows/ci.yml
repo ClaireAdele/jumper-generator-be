@@ -22,4 +22,4 @@ jobs:
         working-directory: ./api
 
       - name: Run Jest tests
-        run: npm test  # Make sure this runs Jest
+        run: npm run test  # Make sure this runs Jest
