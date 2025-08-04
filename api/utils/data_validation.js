@@ -27,13 +27,15 @@ exports.formatUserData = (user) => {
     return signedInUser;
 };
 
-exports.validatePatternData = (jumperStyle) => {
+exports.validatePatternData = (requestBody) => {
+    const { jumperShape } = requestBody;
+
     const jumperShapes = {
         "top-down-raglan": [
             "knittingGauge",
             "chestCircumference",
             "armLength",
-            "bodyLength"
+            "bodyLength",
         ],
         "drop-shoulder": [
             "knittingGauge",
@@ -52,6 +54,25 @@ exports.validatePatternData = (jumperStyle) => {
             "armLength",
         ],
     };
-
     
+    const requiredFields = jumperShapes[jumperShape];
+    
+    /*EDGE CASE: the jumper shape is not in the list*/
+    if (!requiredFields) { 
+        return false;
+    }
+
+    const missingOrIncorrectFields = requiredFields.filter((field) => {
+        const requiredFieldValue = requestBody[field];
+        
+        if (!requiredFieldValue || typeof(requiredFieldValue) != "number" || requiredFieldValue <= 0) { 
+            return true;
+        }
+    });
+
+    if (missingOrIncorrectFields.length > 0) {
+      return false;
+    }
+
+    return true;
 };

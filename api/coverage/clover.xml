@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1739717753049" clover="3.2.0">
-  <project timestamp="1739717753049" name="All files">
-    <metrics statements="180" coveredstatements="169" conditionals="58" coveredconditionals="52" methods="21" coveredmethods="19" elements="259" coveredelements="240" complexity="0" loc="180" ncloc="180" packages="8" files="15" classes="15"/>
+<coverage generated="1754323290872" clover="3.2.0">
+  <project timestamp="1754323290872" name="All files">
+    <metrics statements="242" coveredstatements="229" conditionals="81" coveredconditionals="74" methods="25" coveredmethods="23" elements="348" coveredelements="326" complexity="0" loc="242" ncloc="242" packages="8" files="18" classes="18"/>
     <package name="api">
       <metrics statements="20" coveredstatements="20" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
       <file name="app.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/app.js">
         <metrics statements="14" coveredstatements="14" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="5" count="3" type="stmt"/>
-        <line num="8" count="3" type="stmt"/>
-        <line num="10" count="3" type="stmt"/>
-        <line num="12" count="3" type="stmt"/>
-        <line num="13" count="3" type="stmt"/>
-        <line num="14" count="3" type="stmt"/>
-        <line num="16" count="3" type="stmt"/>
-        <line num="17" count="3" type="stmt"/>
-        <line num="19" count="3" type="stmt"/>
-        <line num="21" count="3" type="stmt"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="8" count="4" type="stmt"/>
+        <line num="11" count="4" type="stmt"/>
+        <line num="13" count="4" type="stmt"/>
+        <line num="15" count="4" type="stmt"/>
+        <line num="16" count="4" type="stmt"/>
+        <line num="17" count="4" type="stmt"/>
+        <line num="19" count="4" type="stmt"/>
+        <line num="20" count="4" type="stmt"/>
+        <line num="22" count="4" type="stmt"/>
+        <line num="24" count="4" type="stmt"/>
       </file>
       <file name="mongodb_helper.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/mongodb_helper.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="5" count="3" type="stmt"/>
-        <line num="8" count="3" type="stmt"/>
-        <line num="9" count="3" type="stmt"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="8" count="4" type="stmt"/>
+        <line num="9" count="4" type="stmt"/>
       </file>
     </package>
     <package name="api.controllers">
-      <metrics statements="66" coveredstatements="64" conditionals="34" coveredconditionals="32" methods="4" coveredmethods="4"/>
+      <metrics statements="100" coveredstatements="96" conditionals="48" coveredconditionals="45" methods="6" coveredmethods="6"/>
       <file name="authentication.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/controllers/authentication.js">
         <metrics statements="20" coveredstatements="20" conditionals="20" coveredconditionals="20" methods="1" coveredmethods="1"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="6" count="3" type="stmt"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
         <line num="7" count="5" type="stmt"/>
         <line num="8" count="5" type="stmt"/>
         <line num="10" count="5" type="cond" truecount="4" falsecount="0"/>
@@ -54,16 +54,43 @@
         <line num="32" count="1" type="stmt"/>
         <line num="43" count="1" type="stmt"/>
         <line num="45" count="4" type="stmt"/>
-        <line num="49" count="3" type="stmt"/>
+        <line num="49" count="4" type="stmt"/>
+      </file>
+      <file name="patterns.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/controllers/patterns.js">
+        <metrics statements="24" coveredstatements="24" conditionals="10" coveredconditionals="10" methods="1" coveredmethods="1"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="7" count="12" type="stmt"/>
+        <line num="22" count="12" type="stmt"/>
+        <line num="24" count="12" type="stmt"/>
+        <line num="26" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="30" count="11" type="cond" truecount="2" falsecount="0"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="34" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="38" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="39" count="7" type="stmt"/>
+        <line num="45" count="2" type="stmt"/>
+        <line num="47" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="65" count="1" type="stmt"/>
+        <line num="67" count="1" type="stmt"/>
+        <line num="71" count="11" type="stmt"/>
+        <line num="76" count="4" type="stmt"/>
       </file>
       <file name="users.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/controllers/users.js">
-        <metrics statements="46" coveredstatements="44" conditionals="14" coveredconditionals="12" methods="3" coveredmethods="3"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="5" count="3" type="stmt"/>
-        <line num="7" count="3" type="stmt"/>
+        <metrics statements="56" coveredstatements="52" conditionals="18" coveredconditionals="15" methods="4" coveredmethods="4"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="7" count="4" type="stmt"/>
         <line num="8" count="2" type="stmt"/>
         <line num="9" count="2" type="stmt"/>
         <line num="11" count="2" type="cond" truecount="1" falsecount="1"/>
@@ -76,21 +103,21 @@
         <line num="29" count="1" type="stmt"/>
         <line num="31" count="1" type="stmt"/>
         <line num="36" count="1" type="stmt"/>
-        <line num="40" count="3" type="stmt"/>
-        <line num="41" count="7" type="stmt"/>
-        <line num="43" count="7" type="stmt"/>
-        <line num="44" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="40" count="4" type="stmt"/>
+        <line num="41" count="8" type="stmt"/>
+        <line num="43" count="8" type="stmt"/>
+        <line num="44" count="8" type="cond" truecount="2" falsecount="0"/>
         <line num="45" count="1" type="stmt"/>
-        <line num="48" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="48" count="7" type="cond" truecount="2" falsecount="0"/>
         <line num="49" count="1" type="stmt"/>
-        <line num="52" count="5" type="cond" truecount="1" falsecount="1"/>
-        <line num="53" count="0" type="stmt"/>
+        <line num="52" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="53" count="1" type="stmt"/>
         <line num="56" count="5" type="stmt"/>
         <line num="58" count="5" type="stmt"/>
         <line num="64" count="5" type="stmt"/>
         <line num="66" count="4" type="stmt"/>
-        <line num="68" count="3" type="stmt"/>
-        <line num="72" count="3" type="stmt"/>
+        <line num="68" count="4" type="stmt"/>
+        <line num="72" count="4" type="stmt"/>
         <line num="73" count="4" type="stmt"/>
         <line num="87" count="4" type="stmt"/>
         <line num="89" count="4" type="stmt"/>
@@ -104,45 +131,55 @@
         <line num="123" count="2" type="stmt"/>
         <line num="125" count="2" type="stmt"/>
         <line num="128" count="2" type="stmt"/>
+        <line num="132" count="4" type="stmt"/>
+        <line num="133" count="1" type="stmt"/>
+        <line num="134" count="1" type="stmt"/>
+        <line num="136" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="137" count="0" type="stmt"/>
+        <line num="140" count="1" type="stmt"/>
+        <line num="142" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="143" count="1" type="stmt"/>
+        <line num="145" count="0" type="stmt"/>
+        <line num="149" count="0" type="stmt"/>
       </file>
     </package>
     <package name="api.db">
       <metrics statements="10" coveredstatements="7" conditionals="4" coveredconditionals="2" methods="1" coveredmethods="1"/>
       <file name="db_connection.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/db/db_connection.js">
         <metrics statements="10" coveredstatements="7" conditionals="4" coveredconditionals="2" methods="1" coveredmethods="1"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="6" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="6" count="4" type="cond" truecount="1" falsecount="1"/>
         <line num="7" count="0" type="stmt"/>
         <line num="10" count="0" type="stmt"/>
-        <line num="13" count="3" type="stmt"/>
-        <line num="15" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="13" count="4" type="stmt"/>
+        <line num="15" count="4" type="cond" truecount="1" falsecount="1"/>
         <line num="16" count="0" type="stmt"/>
-        <line num="20" count="3" type="stmt"/>
+        <line num="20" count="4" type="stmt"/>
       </file>
     </package>
     <package name="api.errorHandling">
       <metrics statements="15" coveredstatements="13" conditionals="4" coveredconditionals="3" methods="5" coveredmethods="4"/>
       <file name="customError.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/errorHandling/customError.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
-        <line num="3" count="9" type="stmt"/>
-        <line num="4" count="9" type="stmt"/>
-        <line num="8" count="3" type="stmt"/>
+        <line num="3" count="21" type="stmt"/>
+        <line num="4" count="21" type="stmt"/>
+        <line num="8" count="4" type="stmt"/>
       </file>
       <file name="errorHandlers.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/errorHandling/errorHandlers.js">
         <metrics statements="12" coveredstatements="10" conditionals="4" coveredconditionals="3" methods="4" coveredmethods="3"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="22" type="cond" truecount="2" falsecount="0"/>
         <line num="3" count="1" type="stmt"/>
-        <line num="4" count="9" type="cond" truecount="1" falsecount="1"/>
-        <line num="5" count="9" type="stmt"/>
+        <line num="4" count="21" type="cond" truecount="1" falsecount="1"/>
+        <line num="5" count="21" type="stmt"/>
         <line num="7" count="0" type="stmt"/>
-        <line num="12" count="3" type="stmt"/>
+        <line num="12" count="4" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
-        <line num="17" count="3" type="stmt"/>
+        <line num="17" count="4" type="stmt"/>
         <line num="18" count="1" type="stmt"/>
-        <line num="25" count="3" type="stmt"/>
+        <line num="25" count="4" type="stmt"/>
         <line num="26" count="1" type="stmt"/>
       </file>
     </package>
@@ -150,104 +187,138 @@
       <metrics statements="9" coveredstatements="9" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
       <file name="tokenChecker.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/middleware/tokenChecker.js">
         <metrics statements="9" coveredstatements="9" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="9" type="stmt"/>
-        <line num="6" count="9" type="stmt"/>
-        <line num="7" count="9" type="cond" truecount="2" falsecount="0"/>
-        <line num="8" count="3" type="stmt"/>
-        <line num="10" count="6" type="stmt"/>
-        <line num="11" count="6" type="stmt"/>
-        <line num="16" count="3" type="stmt"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="25" type="stmt"/>
+        <line num="7" count="25" type="stmt"/>
+        <line num="8" count="25" type="cond" truecount="2" falsecount="0"/>
+        <line num="9" count="6" type="stmt"/>
+        <line num="11" count="19" type="stmt"/>
+        <line num="12" count="19" type="stmt"/>
+        <line num="17" count="4" type="stmt"/>
       </file>
     </package>
     <package name="api.models">
-      <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-      <file name="users.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/models/users.js">
+      <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="patterns.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/models/patterns.js">
         <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="4" type="stmt"/>
-        <line num="3" count="4" type="stmt"/>
-        <line num="25" count="4" type="stmt"/>
-        <line num="27" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="28" count="4" type="stmt"/>
+        <line num="30" count="4" type="stmt"/>
+      </file>
+      <file name="users.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/models/users.js">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="5" type="stmt"/>
+        <line num="3" count="5" type="stmt"/>
+        <line num="25" count="5" type="stmt"/>
+        <line num="27" count="5" type="stmt"/>
       </file>
     </package>
     <package name="api.routers">
-      <metrics statements="25" coveredstatements="25" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <metrics statements="36" coveredstatements="36" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       <file name="apiRouter.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/routers/apiRouter.js">
-        <metrics statements="7" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="7" count="3" type="stmt"/>
-        <line num="8" count="3" type="stmt"/>
-        <line num="10" count="3" type="stmt"/>
+        <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="8" count="4" type="stmt"/>
+        <line num="9" count="4" type="stmt"/>
+        <line num="10" count="4" type="stmt"/>
+        <line num="13" count="4" type="stmt"/>
       </file>
       <file name="authRouter.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/routers/authRouter.js">
         <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="5" count="3" type="stmt"/>
-        <line num="7" count="3" type="stmt"/>
-        <line num="9" count="3" type="stmt"/>
-        <line num="11" count="3" type="stmt"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="7" count="4" type="stmt"/>
+        <line num="9" count="4" type="stmt"/>
+        <line num="11" count="4" type="stmt"/>
+      </file>
+      <file name="patternsRouter.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/routers/patternsRouter.js">
+        <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="8" count="4" type="stmt"/>
+        <line num="10" count="4" type="stmt"/>
+        <line num="12" count="4" type="stmt"/>
       </file>
       <file name="usersRouter.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/routers/usersRouter.js">
-        <metrics statements="10" coveredstatements="10" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="5" count="3" type="stmt"/>
-        <line num="8" count="3" type="stmt"/>
-        <line num="9" count="3" type="stmt"/>
-        <line num="10" count="3" type="stmt"/>
-        <line num="12" count="3" type="stmt"/>
-        <line num="14" count="3" type="stmt"/>
+        <metrics statements="11" coveredstatements="11" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="8" count="4" type="stmt"/>
+        <line num="9" count="4" type="stmt"/>
+        <line num="10" count="4" type="stmt"/>
+        <line num="11" count="4" type="stmt"/>
+        <line num="13" count="4" type="stmt"/>
+        <line num="15" count="4" type="stmt"/>
       </file>
     </package>
     <package name="api.utils">
-      <metrics statements="31" coveredstatements="27" conditionals="14" coveredconditionals="13" methods="7" coveredmethods="6"/>
+      <metrics statements="44" coveredstatements="40" conditionals="23" coveredconditionals="22" methods="9" coveredmethods="8"/>
       <file name="data_validation.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/utils/data_validation.js">
-        <metrics statements="10" coveredstatements="10" conditionals="12" coveredconditionals="12" methods="3" coveredmethods="3"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="11" type="stmt"/>
-        <line num="6" count="11" type="stmt"/>
-        <line num="9" count="3" type="stmt"/>
-        <line num="10" count="6" type="stmt"/>
-        <line num="12" count="6" type="stmt"/>
-        <line num="15" count="3" type="stmt"/>
+        <metrics statements="23" coveredstatements="23" conditionals="21" coveredconditionals="21" methods="5" coveredmethods="5"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="12" type="stmt"/>
+        <line num="6" count="12" type="stmt"/>
+        <line num="9" count="4" type="stmt"/>
+        <line num="10" count="7" type="stmt"/>
+        <line num="12" count="7" type="stmt"/>
+        <line num="15" count="4" type="stmt"/>
         <line num="16" count="3" type="stmt"/>
         <line num="27" count="3" type="stmt"/>
+        <line num="30" count="4" type="stmt"/>
+        <line num="31" count="9" type="stmt"/>
+        <line num="33" count="9" type="stmt"/>
+        <line num="58" count="9" type="stmt"/>
+        <line num="61" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="65" count="8" type="stmt"/>
+        <line num="66" count="36" type="stmt"/>
+        <line num="68" count="36" type="cond" truecount="5" falsecount="0"/>
+        <line num="69" count="10" type="stmt"/>
+        <line num="73" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="74" count="6" type="stmt"/>
+        <line num="77" count="2" type="stmt"/>
       </file>
       <file name="encryption_utils.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/utils/encryption_utils.js">
         <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
         <line num="4" count="10" type="stmt"/>
         <line num="5" count="10" type="stmt"/>
         <line num="6" count="10" type="stmt"/>
-        <line num="9" count="3" type="stmt"/>
+        <line num="9" count="4" type="stmt"/>
         <line num="10" count="2" type="stmt"/>
         <line num="12" count="2" type="stmt"/>
       </file>
       <file name="jwt_token_utils.js" path="/Users/clairecastanet/personal-projects/raglan-generator-be/api/utils/jwt_token_utils.js">
         <metrics statements="13" coveredstatements="9" conditionals="2" coveredconditionals="1" methods="2" coveredmethods="1"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="6" count="3" type="stmt"/>
-        <line num="7" count="13" type="stmt"/>
-        <line num="8" count="13" type="cond" truecount="1" falsecount="1"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="7" count="29" type="stmt"/>
+        <line num="8" count="29" type="cond" truecount="1" falsecount="1"/>
         <line num="9" count="0" type="stmt"/>
-        <line num="14" count="13" type="stmt"/>
+        <line num="14" count="29" type="stmt"/>
         <line num="25" count="0" type="stmt"/>
         <line num="26" count="0" type="stmt"/>
-        <line num="30" count="3" type="stmt"/>
+        <line num="30" count="4" type="stmt"/>
         <line num="31" count="0" type="stmt"/>
       </file>
     </package>
