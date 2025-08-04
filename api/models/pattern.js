@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+//TODO - add a field for what kind of jumpers it should be as well I think
 const PatternSchema = new mongoose.Schema({
     patternName: {
         type: String,
@@ -17,6 +18,7 @@ const PatternSchema = new mongoose.Schema({
     necklineToChest: Number,
     shoulderWidth: Number,
     preferredUnit: String,
+    jumperStyle: String,
 });
 
 const Pattern = mongoose.model("Pattern", PatternSchema);

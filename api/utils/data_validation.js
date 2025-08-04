@@ -26,3 +26,32 @@ exports.formatUserData = (user) => {
     
     return signedInUser;
 };
+
+exports.validatePatternData = (jumperStyle) => {
+    const jumperShapes = {
+        "top-down-raglan": [
+            "knittingGauge",
+            "chestCircumference",
+            "armLength",
+            "bodyLength"
+        ],
+        "drop-shoulder": [
+            "knittingGauge",
+            "chestCircumference",
+            "bodyLength",
+            "necklineToChest",
+            "shoulderWidth",
+            "armLength",
+        ],
+        "bottom-up": [
+            "knittingGauge",
+            "chestCircumference",
+            "bodyLength",
+            "necklineToChest",
+            "shoulderWidth",
+            "armLength",
+        ],
+    };
+
+    
+};

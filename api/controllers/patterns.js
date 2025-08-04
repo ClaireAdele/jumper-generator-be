@@ -6,7 +6,7 @@ const savePattern = async (req, res, next) => {
     const _id = req.userId;
 
     /*The preferred unit here can be different than the one specified in the profile, the user should 
-    be allowed to create patterns with a different unit if they wish. */
+    be allowed to create patterns with a different unit if they wish.*/
     const {
         chestCircumference,
         armLength,
@@ -14,14 +14,19 @@ const savePattern = async (req, res, next) => {
         bodyLength,
         shoulderWidth,
         preferredUnit,
-        patternName
+        patternName,
+        jumperStyle
     } = req.body;
 
     try {
+        if (!patternName) {
+            throw new CustomError("Missing required field: patternName", 400);
+        }
+        
         const user = await User.findById({ _id });
 
-        if (!user) { 
-             throw new CustomError("User not found", 404);
+        if (!user) {
+            throw new CustomError("User not found", 404);
         }
 
         const pattern = new Pattern({
@@ -32,6 +37,7 @@ const savePattern = async (req, res, next) => {
             shoulderWidth,
             preferredUnit,
             patternName,
+            jumperStyle,
             user: user._id
         });
         
@@ -39,7 +45,7 @@ const savePattern = async (req, res, next) => {
 
         res.status(201).json({ message: `Pattern ${pattern._id} has been created`, pattern });
 
-    } catch(error) {
+    } catch (error) {
         next(error);
     }
 
