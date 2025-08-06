@@ -18,7 +18,8 @@ const savePattern = async (req, res, next) => {
         necklineToChest,
         patternName,
         jumperShape,
-        knittingGauge
+      knittingGauge,
+        easeAmount
     } = req.body;
 
   try {
@@ -60,6 +61,7 @@ const savePattern = async (req, res, next) => {
         necklineToChest,
         knittingGauge,
         user: user._id,
+        easeAmount
       });
 
       await pattern.save();
