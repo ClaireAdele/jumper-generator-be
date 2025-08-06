@@ -31,28 +31,31 @@ exports.validatePatternData = (requestBody) => {
     const { jumperShape } = requestBody;
 
     const jumperShapes = {
-        "top-down-raglan": [
-            "knittingGauge",
-            "chestCircumference",
-            "armLength",
-            "bodyLength",
-        ],
-        "drop-shoulder": [
-            "knittingGauge",
-            "chestCircumference",
-            "bodyLength",
-            "necklineToChest",
-            "shoulderWidth",
-            "armLength",
-        ],
-        "bottom-up": [
-            "knittingGauge",
-            "chestCircumference",
-            "bodyLength",
-            "necklineToChest",
-            "shoulderWidth",
-            "armLength",
-        ],
+      "top-down-raglan": [
+        "knittingGauge",
+        "chestCircumference",
+        "armLength",
+        "bodyLength",
+        "easeAmount",
+      ],
+      "drop-shoulder": [
+        "knittingGauge",
+        "chestCircumference",
+        "bodyLength",
+        "necklineToChest",
+        "shoulderWidth",
+        "armLength",
+        "easeAmount",
+      ],
+      "bottom-up": [
+        "knittingGauge",
+        "chestCircumference",
+        "bodyLength",
+        "necklineToChest",
+        "shoulderWidth",
+        "armLength",
+        "easeAmount",
+      ],
     };
     
     const requiredFields = jumperShapes[jumperShape];
@@ -65,10 +68,10 @@ exports.validatePatternData = (requestBody) => {
     const missingOrIncorrectFields = requiredFields.filter((field) => {
         const requiredFieldValue = requestBody[field];
         
-        if (!requiredFieldValue || typeof(requiredFieldValue) != "number" || requiredFieldValue <= 0) { 
-            return true;
-        }
+        return !requiredFieldValue || typeof (requiredFieldValue) != "number" || requiredFieldValue <= 0;
     });
+
+    console.log(missingOrIncorrectFields)
 
     if (missingOrIncorrectFields.length > 0) {
       return false;

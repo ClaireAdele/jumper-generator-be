@@ -15,6 +15,10 @@ const PatternSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  easeAmount: {
+    type: Number,
+    required: true,
+  },
   knittingGauge: Number,
   chestCircumference: Number,
   armLength: Number,
