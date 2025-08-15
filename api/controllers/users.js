@@ -23,7 +23,7 @@ exports.getSignedInUser = async (req, res, next) => {
         res.cookie("token", token, {
           httpOnly: true,
           sameSite: "Lax",
-          maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
+          maxAge: 1000 * 10 * 60,
         });
 
         const signedInUser = formatUserData(user);
