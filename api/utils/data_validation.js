@@ -32,14 +32,12 @@ exports.validatePatternData = (requestBody) => {
 
     const jumperShapes = {
       "top-down-raglan": [
-        "knittingGauge",
         "chestCircumference",
         "armLength",
         "bodyLength",
         "easeAmount",
       ],
       "drop-shoulder": [
-        "knittingGauge",
         "chestCircumference",
         "bodyLength",
         "necklineToChest",
@@ -48,7 +46,6 @@ exports.validatePatternData = (requestBody) => {
         "easeAmount",
       ],
       "bottom-up": [
-        "knittingGauge",
         "chestCircumference",
         "bodyLength",
         "necklineToChest",
