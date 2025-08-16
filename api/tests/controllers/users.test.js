@@ -7,6 +7,7 @@ require("../../mongodb_helper");
 
 
 describe("TESTS FOR /users ENDPOINT", () => {
+  //These will run when making a pull request
   describe("POST - createNewUser", () => {
     beforeEach(async () => {
       await User.deleteMany({});
