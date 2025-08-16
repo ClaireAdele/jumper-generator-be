@@ -1,7 +1,10 @@
 const app = require("../../app");
 const request = require("supertest");
+const mongoose = require("mongoose");
+
 const User = require("../../models/users");
 const Pattern = require("../../models/patterns");
+
 const { hashPassword } = require("../../utils/encryption_utils");
 const { generateToken } = require("../../utils/jwt_token_utils");
 require("../../mongodb_helper");
@@ -347,6 +350,105 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
     });
   });
 
+  describe("GET - getPatternById", () => {
+    let token;
+    let user;
+    let userId;
+    let cookie;
+    let pattern;
+
+    beforeEach(async () => {
+      user = new User({
+        username: "testUser",
+        email: "test@email.com",
+        password: "password",
+      });
+
+      pattern = new Pattern({
+        jumperShape: "top-down-raglan",
+        chestCircumference: 10,
+        armLength: 10,
+        bodyLength: 10,
+        easeAmount: 10,
+        knittingGauge: 10,
+        patternName: "Test Pattern",
+        user: new mongoose.Types.ObjectId(user._id),
+      });
+
+      await user.save();
+      await pattern.save();
+      token = generateToken(user._id);
+      userId = user._id;
+      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+    });
+
+    afterEach(async () => {
+      await User.deleteMany();
+      await Pattern.deleteMany();
+    });
+
+    test("When the params are set correctly to an existing pattern, and the user is logged in, the server responds with a sucess message and the pattern data", async () => {
+      const response = await request(app)
+        .get(`/api/patterns/${pattern._id}`)
+        .set("Cookie", cookie)
+      
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: `Pattern ${pattern._id} found`,
+        pattern: {
+          _id: pattern._id.toString(),
+          patternName: "Test Pattern",
+          user: user._id.toString(),
+          jumperShape: "top-down-raglan",
+          easeAmount: 10,
+          knittingGauge: 10,
+          chestCircumference: 10,
+          armLength: 10,
+          bodyLength: 10,
+          __v: 0,
+        },
+      });
+    });
+
+    test("If the user is not logged in, then the server responds with 401 - 'Could not verify token'", async () => {
+      const response = await request(app)
+        .get(`/api/patterns/${pattern._id}`)
+      
+      expect(response.body).toEqual({
+        message: "Could not verify token"
+      });
+    });
+
+    test("If there no pattern with that id, the server should return 404 - not found", async () => {
+      const nonExistentPatternId = new mongoose.Types.ObjectId();
+      const response = await request(app)
+        .get(`/api/patterns/${nonExistentPatternId}`)
+        .set("Cookie", cookie);
+      
+      expect(response.body).toEqual({ message: "Pattern does not exist" });
+      expect(response.status).toBe(404);
+    });
+
+    test("If there the id is malformed, the error should be caught by the mongoose error global handler", async () => {
+      const response = await request(app)
+        .get(`/api/patterns/malformedId`)
+        .set("Cookie", cookie);
+
+      expect(response.body).toEqual({ message: "Invalid ID format" });
+      expect(response.status).toBe(400);
+    });
+
+    test("If the token is malformed or expired, return 401 - Could not validate token", async () => {
+      const expiredToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjc5YTVkMTg5Mzk3ZDUxNDA3NjE3ZWRmIiwiaWF0IjoxNzU1MjY4NDYyLCJleHAiOjE3NTUyNjkwNjJ9.Oqy48kRFvYEK15dWBb1hpXLpCCC_rDMX0BWqoqxRmFk";
+      const badCookie = `token=${expiredToken}; HttpOnly; Path=/; Secure`;
+       const response = await request(app)
+        .get(`/api/patterns/${pattern._id}`)
+         .set("Cookie", badCookie);
+      
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Could not verify token" });
+    })
+  });
 });
   
 
