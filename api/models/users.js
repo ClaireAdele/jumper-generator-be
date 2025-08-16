@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema({
   necklineToChest: Number,
   shoulderWidth: Number,
   preferredUnit: String,
+  patterns: {
+     type: [ mongoose.Schema.Types.ObjectId ],
+      ref: "Pattern",
+  }
 });
 
 const User = mongoose.model("User", UserSchema);

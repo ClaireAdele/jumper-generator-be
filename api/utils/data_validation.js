@@ -13,46 +13,47 @@ exports.isEmailAlreadyInUse = async (email) => {
 };
 
 exports.formatUserData = (user) => {
-    const signedInUser = {
-        email: user.email,
-        username: user.username,
-        chestCircumference: user.chestCircumference ?? undefined,
-        armLength: user.armLength ?? undefined,
-        armCircumference: user.armCircumference ?? undefined,
-        bodyLength: user.bodyLength ?? undefined,
-        shoulderWidth: user.shoulderWidth ?? undefined,
-        preferredUnit: user.preferredUnit ?? undefined,
-    };
+  const signedInUser = {
+    email: user.email,
+    username: user.username,
+    chestCircumference: user.chestCircumference ?? undefined,
+    armLength: user.armLength ?? undefined,
+    armCircumference: user.armCircumference ?? undefined,
+    bodyLength: user.bodyLength ?? undefined,
+    shoulderWidth: user.shoulderWidth ?? undefined,
+    preferredUnit: user.preferredUnit ?? undefined,
+    patterns: user.patterns ?? undefined,
+  };
     
-    return signedInUser;
+  return signedInUser;
 };
 
 exports.validatePatternData = (requestBody) => {
     const { jumperShape } = requestBody;
 
     const jumperShapes = {
-        "top-down-raglan": [
-            "knittingGauge",
-            "chestCircumference",
-            "armLength",
-            "bodyLength",
-        ],
-        "drop-shoulder": [
-            "knittingGauge",
-            "chestCircumference",
-            "bodyLength",
-            "necklineToChest",
-            "shoulderWidth",
-            "armLength",
-        ],
-        "bottom-up": [
-            "knittingGauge",
-            "chestCircumference",
-            "bodyLength",
-            "necklineToChest",
-            "shoulderWidth",
-            "armLength",
-        ],
+      "top-down-raglan": [
+        "chestCircumference",
+        "armLength",
+        "bodyLength",
+        "easeAmount",
+      ],
+      "drop-shoulder": [
+        "chestCircumference",
+        "bodyLength",
+        "necklineToChest",
+        "shoulderWidth",
+        "armLength",
+        "easeAmount",
+      ],
+      "bottom-up": [
+        "chestCircumference",
+        "bodyLength",
+        "necklineToChest",
+        "shoulderWidth",
+        "armLength",
+        "easeAmount",
+      ],
     };
     
     const requiredFields = jumperShapes[jumperShape];
@@ -65,10 +66,10 @@ exports.validatePatternData = (requestBody) => {
     const missingOrIncorrectFields = requiredFields.filter((field) => {
         const requiredFieldValue = requestBody[field];
         
-        if (!requiredFieldValue || typeof(requiredFieldValue) != "number" || requiredFieldValue <= 0) { 
-            return true;
-        }
+        return !requiredFieldValue || typeof (requiredFieldValue) != "number" || requiredFieldValue <= 0;
     });
+
+    console.log(missingOrIncorrectFields)
 
     if (missingOrIncorrectFields.length > 0) {
       return false;
