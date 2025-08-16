@@ -44,7 +44,7 @@ const savePattern = async (req, res, next) => {
       );
     }
 
-    const user = await User.findById({ _id });
+    const user = await User.findById(_id);
 
     if (!user) {
       throw new CustomError("User not found", 404);
@@ -83,18 +83,18 @@ const savePattern = async (req, res, next) => {
   }
 };
 
-const getPattern = async (req, res, next) => {
+const getPatternById = async (req, res, next) => {
   const _id = req.userId;
   const { pattern_id } = req.params;
 
   try {
-    const pattern = await Pattern.findById({ _id: pattern_id });
-    console.log(pattern)
+    const pattern = await Pattern.findById(pattern_id);
 
-    console.log(_id)
+    if (!pattern) {
+      throw new CustomError("Pattern does not exist", 404);
+    }
     
     const token = generateToken(_id);
-    console.log(token)
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -103,9 +103,9 @@ const getPattern = async (req, res, next) => {
     });
 
     res.status(200).json({ message: `Pattern ${pattern._id} found`, pattern });
-  } catch(error) { 
+  } catch (error) { 
     next(error);
   }
 }
 
-module.exports = { savePattern, getPattern };
+module.exports = { savePattern, getPatternById };

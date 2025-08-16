@@ -1,5 +1,7 @@
 exports.globalErrorHandler = (err, req, res, next) => {
-  if (err._message) {
+  if (err.name === "CastError") {
+    return res.status(400).send({ message: "Invalid ID format" });
+  } else if (err._message) {
     res.status(400).send({ message: `Mongoose error : ${err._message}` });
   } else if (err.message) {
     res.status(err.status).send({ message: err.message });
