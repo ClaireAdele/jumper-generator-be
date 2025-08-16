@@ -149,6 +149,8 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
         });
 
       [user] = await User.find({ _id: userId });
+
+      console.log(user);
       expect(response.statusCode).toBe(201);
       expect(response.body.message).toBe(`User ${user._id} has been updated`);
       expect(response.body.updatedUser).toEqual({
@@ -156,6 +158,7 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
         email: "test@email.com",
         chestCircumference: 4,
         armLength: 3,
+        patterns: []
       });
     });
 
@@ -246,6 +249,7 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
         signedInUser: {
           username: "testUser2",
           email: "test2@email.com",
+          patterns: [],
         },
       });
     });

@@ -1,0 +1,76 @@
+Date : 2025-08-04 17:17:55
+Directory : /Users/clairecastanet/personal-projects/raglan-generator-be
+Total : 34 files,  -5038 codes, -34 comments, -452 blanks, all -5524 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| JSON       |          1 |        -19 |          0 |         -1 |        -20 |
+| PostCSS    |          2 |       -204 |         -9 |        -14 |       -227 |
+| JavaScript |          3 |       -232 |        -25 |        -31 |       -288 |
+| XML        |          1 |       -326 |          0 |         -1 |       -327 |
+| HTML       |         27 |     -4,257 |          0 |       -405 |     -4,662 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                                         | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                            |         34 |     -5,038 |        -34 |       -452 |     -5,524 |
+| api                                                                                                                          |         34 |     -5,038 |        -34 |       -452 |     -5,524 |
+| api/coverage                                                                                                                 |         34 |     -5,038 |        -34 |       -452 |     -5,524 |
+| api/coverage (Files)                                                                                                         |          2 |       -345 |          0 |         -2 |       -347 |
+| api/coverage/lcov-report                                                                                                     |         32 |     -4,693 |        -34 |       -450 |     -5,177 |
+| api/coverage/lcov-report (Files)                                                                                             |          6 |       -636 |        -34 |        -66 |       -736 |
+| api/coverage/lcov-report/api                                                                                                 |         26 |     -4,057 |          0 |       -384 |     -4,441 |
+| api/coverage/lcov-report/api (Files)                                                                                         |          3 |       -357 |          0 |        -43 |       -400 |
+| api/coverage/lcov-report/api/controllers                                                                                     |          4 |     -1,164 |          0 |        -62 |     -1,226 |
+| api/coverage/lcov-report/api/db                                                                                              |          2 |       -232 |          0 |        -29 |       -261 |
+| api/coverage/lcov-report/api/errorHandling                                                                                   |          3 |       -375 |          0 |        -43 |       -418 |
+| api/coverage/lcov-report/api/middleware                                                                                      |          2 |       -224 |          0 |        -28 |       -252 |
+| api/coverage/lcov-report/api/models                                                                                          |          3 |       -423 |          0 |        -43 |       -466 |
+| api/coverage/lcov-report/api/routers                                                                                         |          5 |       -572 |          0 |        -73 |       -645 |
+| api/coverage/lcov-report/api/utils                                                                                           |          4 |       -710 |          0 |        -63 |       -773 |
++------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                                                                     | language   | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/clover.xml                                          | XML        |       -326 |          0 |         -1 |       -327 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/coverage-final.json                                 | JSON       |        -19 |          0 |         -1 |        -20 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/app.js.html                         | HTML       |       -140 |          0 |        -14 |       -154 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/controllers/authentication.js.html  | HTML       |       -214 |          0 |        -15 |       -229 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/controllers/index.html              | HTML       |       -130 |          0 |        -16 |       -146 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/controllers/patterns.js.html        | HTML       |       -296 |          0 |        -14 |       -310 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/controllers/users.js.html           | HTML       |       -524 |          0 |        -17 |       -541 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/db/db_connection.js.html            | HTML       |       -130 |          0 |        -15 |       -145 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/db/index.html                       | HTML       |       -102 |          0 |        -14 |       -116 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/errorHandling/customError.js.html   | HTML       |        -95 |          0 |        -14 |       -109 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/errorHandling/errorHandlers.js.html | HTML       |       -164 |          0 |        -14 |       -178 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/errorHandling/index.html            | HTML       |       -116 |          0 |        -15 |       -131 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/index.html                          | HTML       |       -116 |          0 |        -15 |       -131 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/middleware/index.html               | HTML       |       -102 |          0 |        -14 |       -116 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/middleware/tokenChecker.js.html     | HTML       |       -122 |          0 |        -14 |       -136 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/models/index.html                   | HTML       |       -116 |          0 |        -15 |       -131 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/models/patterns.js.html             | HTML       |       -158 |          0 |        -14 |       -172 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/models/users.js.html                | HTML       |       -149 |          0 |        -14 |       -163 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/mongodb_helper.js.html              | HTML       |       -101 |          0 |        -14 |       -115 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/routers/apiRouter.js.html           | HTML       |       -110 |          0 |        -14 |       -124 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/routers/authRouter.js.html          | HTML       |       -101 |          0 |        -14 |       -115 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/routers/index.html                  | HTML       |       -144 |          0 |        -17 |       -161 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/routers/patternsRouter.js.html      | HTML       |       -104 |          0 |        -14 |       -118 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/routers/usersRouter.js.html         | HTML       |       -113 |          0 |        -14 |       -127 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/utils/data_validation.js.html       | HTML       |       -297 |          0 |        -19 |       -316 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/utils/encryption_utils.js.html      | HTML       |       -107 |          0 |        -14 |       -121 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/utils/index.html                    | HTML       |       -130 |          0 |        -16 |       -146 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/api/utils/jwt_token_utils.js.html       | HTML       |       -176 |          0 |        -14 |       -190 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/base.css                                | PostCSS    |       -203 |         -9 |        -13 |       -225 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/block-navigation.js                     | JavaScript |        -66 |         -7 |        -15 |        -88 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/index.html                              | HTML       |       -200 |          0 |        -21 |       -221 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/prettify.css                            | PostCSS    |         -1 |          0 |         -1 |         -2 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/prettify.js                             | JavaScript |         -1 |         -1 |         -1 |         -3 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/coverage/lcov-report/sorter.js                               | JavaScript |       -165 |        -17 |        -15 |       -197 |
+| Total                                                                                                                        |            |     -5,038 |        -34 |       -452 |     -5,524 |
++------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+

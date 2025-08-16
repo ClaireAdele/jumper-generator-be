@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '23'  # or your project's version
+          node-version: '23'
 
       - name: Install dependencies
         run: npm ci
@@ -31,4 +31,4 @@ jobs:
         run: npm run test
         working-directory: ./api
         env:
-          MONGODB_URI: mongodb://0.0.0.0/jumper-generator-test-database  # Make sure this runs Jest
+          MONGODB_URI: mongodb://0.0.0.0/jumper-generator-test-database

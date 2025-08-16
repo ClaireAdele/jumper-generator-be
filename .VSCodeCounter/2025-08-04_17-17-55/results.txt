@@ -1,0 +1,69 @@
+Date : 2025-08-04 17:17:55
+Directory : /Users/clairecastanet/personal-projects/raglan-generator-be
+Total : 28 files,  6541 codes, 14 comments, 283 blanks, all 6838 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| JSON       |          2 |      5,342 |          0 |          2 |      5,344 |
+| JavaScript |         25 |      1,172 |         14 |        273 |      1,459 |
+| YAML       |          1 |         27 |          0 |          8 |         35 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                     | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                        |         28 |      6,541 |         14 |        283 |      6,838 |
+| .github                                                                                                  |          1 |         27 |          0 |          8 |         35 |
+| .github/workflows                                                                                        |          1 |         27 |          0 |          8 |         35 |
+| api                                                                                                      |         27 |      6,514 |         14 |        275 |      6,803 |
+| api (Files)                                                                                              |          6 |      5,386 |          1 |         19 |      5,406 |
+| api/controllers                                                                                          |          3 |        215 |          6 |         57 |        278 |
+| api/db                                                                                                   |          1 |         15 |          0 |          6 |         21 |
+| api/errorHandling                                                                                        |          2 |         32 |          3 |          6 |         41 |
+| api/middleware                                                                                           |          1 |         13 |          1 |          4 |         18 |
+| api/models                                                                                               |          2 |         50 |          1 |          6 |         57 |
+| api/routers                                                                                              |          4 |         36 |          0 |         16 |         52 |
+| api/tests                                                                                                |          5 |        668 |          0 |        135 |        803 |
+| api/tests/api                                                                                            |          1 |         14 |          0 |          7 |         21 |
+| api/tests/controllers                                                                                    |          3 |        634 |          0 |        122 |        756 |
+| api/tests/models                                                                                         |          1 |         20 |          0 |          6 |         26 |
+| api/utils                                                                                                |          3 |         99 |          2 |         26 |        127 |
++----------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                                                 | language   | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| /Users/clairecastanet/personal-projects/raglan-generator-be/.github/workflows/ci.yml                     | YAML       |         27 |          0 |          8 |         35 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/app.js                                   | JavaScript |         17 |          0 |          7 |         24 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/controllers/authentication.js            | JavaScript |         39 |          0 |         10 |         49 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/controllers/patterns.js                  | JavaScript |         60 |          3 |         13 |         76 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/controllers/users.js                     | JavaScript |        116 |          3 |         34 |        153 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/db/db_connection.js                      | JavaScript |         15 |          0 |          6 |         21 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/errorHandling/customError.js             | JavaScript |          7 |          0 |          2 |          9 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/errorHandling/errorHandlers.js           | JavaScript |         25 |          3 |          4 |         32 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/index.js                                 | JavaScript |         12 |          0 |          4 |         16 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/jest.config.js                           | JavaScript |          7 |          1 |          3 |         11 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/middleware/tokenChecker.js               | JavaScript |         13 |          1 |          4 |         18 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/models/patterns.js                       | JavaScript |         26 |          1 |          3 |         30 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/models/users.js                          | JavaScript |         24 |          0 |          3 |         27 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/mongodb_helper.js                        | JavaScript |          8 |          0 |          3 |         11 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/package-lock.json                        | JSON       |      5,313 |          0 |          1 |      5,314 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/package.json                             | JSON       |         29 |          0 |          1 |         30 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/routers/apiRouter.js                     | JavaScript |          9 |          0 |          5 |         14 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/routers/authRouter.js                    | JavaScript |          8 |          0 |          3 |         11 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/routers/patternsRouter.js                | JavaScript |          8 |          0 |          4 |         12 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/routers/usersRouter.js                   | JavaScript |         11 |          0 |          4 |         15 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/tests/api/api.test.js                    | JavaScript |         14 |          0 |          7 |         21 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/tests/controllers/authentication.test.js | JavaScript |         80 |          0 |         14 |         94 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/tests/controllers/patterns.test.js       | JavaScript |        287 |          0 |         52 |        339 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/tests/controllers/users.test.js          | JavaScript |        267 |          0 |         56 |        323 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/tests/models/users.test.js               | JavaScript |         20 |          0 |          6 |         26 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/utils/data_validation.js                 | JavaScript |         63 |          1 |         14 |         78 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/utils/encryption_utils.js                | JavaScript |         10 |          0 |          3 |         13 |
+| /Users/clairecastanet/personal-projects/raglan-generator-be/api/utils/jwt_token_utils.js                 | JavaScript |         26 |          1 |          9 |         36 |
+| Total                                                                                                    |            |      6,541 |         14 |        283 |      6,838 |
++----------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
