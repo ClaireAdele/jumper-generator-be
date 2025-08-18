@@ -22,7 +22,6 @@ exports.formatUserData = (user) => {
     bodyLength: user.bodyLength ?? undefined,
     shoulderWidth: user.shoulderWidth ?? undefined,
     preferredUnit: user.preferredUnit ?? undefined,
-    patterns: user.patterns ?? undefined,
   };
     
   return signedInUser;
