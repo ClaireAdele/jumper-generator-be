@@ -159,7 +159,6 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
         email: "test@email.com",
         chestCircumference: 4,
         armLength: 3,
-        patterns: []
       });
     });
 
@@ -250,7 +249,6 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
         signedInUser: {
           username: "testUser2",
           email: "test2@email.com",
-          patterns: [],
         },
       });
     });
