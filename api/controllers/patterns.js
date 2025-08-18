@@ -72,7 +72,7 @@ const savePattern = async (req, res, next) => {
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "Lax",
-      maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
+      maxAge: 1000 * 10 * 60,
     });
 
     res
@@ -84,17 +84,17 @@ const savePattern = async (req, res, next) => {
 };
 
 const getPatternById = async (req, res, next) => {
-  const _id = req.userId;
-  const { pattern_id } = req.params;
+  const userId = req.userId;
+  const { patternId } = req.params;
 
   try {
-    const pattern = await Pattern.findById(pattern_id);
+    const pattern = await Pattern.findById(patternId);
 
     if (!pattern) {
       throw new CustomError("Pattern does not exist", 404);
     }
     
-    const token = generateToken(_id);
+    const token = generateToken(userId);
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -108,4 +108,24 @@ const getPatternById = async (req, res, next) => {
   }
 }
 
-module.exports = { savePattern, getPatternById };
+const getPatternsByUser = async (req, res, next) => {
+  const userId = req.userId;
+
+  try {
+    const patterns = await Pattern.find({ user: userId });
+
+    const token = generateToken(userId);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "Lax",
+      maxAge: 1000 * 10 * 60,
+    });
+
+    res.status(200).json({ message: `Patterns for user ${userId} found`, patterns });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { savePattern, getPatternById, getPatternsByUser };

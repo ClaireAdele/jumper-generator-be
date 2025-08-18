@@ -449,6 +449,105 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
       expect(response.body).toEqual({ message: "Could not verify token" });
     })
   });
+
+  describe("GET - getPatternsByUserId", () => {
+    let token;
+    let user;
+    let userTwo;
+    let userId;
+    let userTwoId;
+    let cookie;
+    let cookieTwo;
+    let tokenTwo;
+    let pattern;
+
+
+    beforeEach(async () => {
+      user = new User({
+        username: "testUser",
+        email: "test@email.com",
+        password: "password",
+      });
+
+      userTwo = new User({
+        username: "testUser2",
+        email: "test2@email.com",
+        password: "password",
+      });
+
+      pattern = new Pattern({
+        jumperShape: "top-down-raglan",
+        chestCircumference: 10,
+        armLength: 10,
+        bodyLength: 10,
+        easeAmount: 10,
+        knittingGauge: 10,
+        patternName: "Test Pattern",
+        user: new mongoose.Types.ObjectId(user._id),
+      });
+
+      await user.save();
+      await pattern.save();
+      token = generateToken(user._id);
+      tokenTwo = generateToken(userTwo._id);
+      userId = user._id;
+      userTwoId = userTwo._id;
+      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+      cookieTwo = `token=${tokenTwo}; HttpOnly; Path=/; Secure`;
+    });
+
+    afterEach(async () => {
+      await User.deleteMany();
+      await Pattern.deleteMany();
+    });
+
+    test("When the user is logged in and has saved patterns, the server responds with a success message and the user pattern data", async () => {
+      const response = await request(app).get(
+        "/api/patterns/my-patterns"
+      ).set("Cookie", cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: `Patterns for user ${userId} found`,
+        patterns: [
+          {
+            _id: pattern._id.toString(),
+            patternName: "Test Pattern",
+            user: userId.toString(),
+            jumperShape: "top-down-raglan",
+            easeAmount: 10,
+            knittingGauge: 10,
+            chestCircumference: 10,
+            armLength: 10,
+            bodyLength: 10,
+            __v: 0,
+          },
+        ],
+      });
+    });
+
+    test("When the user is logged in and doesn't have any saved patterns, the server still responds with a success message as that's not an error path", async () => {
+      const response = await request(app)
+        .get("/api/patterns/my-patterns")
+        .set("Cookie", cookieTwo);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: `Patterns for user ${userTwoId} found`,
+        patterns: []
+      });
+    });
+
+    test("If the user is not logged in, then the server responds with 401 - 'Could not verify token'", async () => {
+      const response = await request(app).get(
+        "/api/patterns/my-patterns"
+      );
+
+      expect(response.body).toEqual({
+        message: "Could not verify token",
+      });
+    });
+  });
 });
   
 
