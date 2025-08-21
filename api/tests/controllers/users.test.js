@@ -3,6 +3,7 @@ const request = require("supertest");
 const User = require("../../models/users");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../../utils/jwt_token_utils");
+const Pattern = require("../../models/patterns");
 require("../../mongodb_helper");
 
 
@@ -280,6 +281,7 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
     let testUser3;
     let testUserId3;
     let cookie;
+    let pattern;
 
     beforeEach(async () => {
       testUser3 = new User({
@@ -289,6 +291,20 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
       });
 
       await testUser3.save();
+
+      pattern = new Pattern({
+        patternName: "Test Pattern",
+        user: testUser3._id,
+        jumperShape: "top-down-raglan",
+        easeAmount: 7,
+        chestCircumference: 10,
+        armLength: 10,
+        bodyLength: 10,
+        easeAmount: 10
+      });
+      
+      await pattern.save();
+  
       token = generateToken(testUser3._id);
       testUserId3 = testUser3._id;
       cookie = `token=${token}; HttpOnly; Path=/; Secure`;
@@ -302,24 +318,35 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
       const response = await request(app)
         .delete("/api/users/me")
         .set("Cookie", cookie)
+      
+      const testPattern = await Pattern.findById(pattern._id);
 
       expect(response.status).toBe(201);
       expect(response.body).toEqual({ message: "User successfully deleted" });
+      expect(testPattern).toBeFalsy()
     });
 
     test("When the token is invalid, the account deletion attempt is rejected", async () => {
       const response = await request(app)
         .delete("/api/users/me")
+      
+      const testPattern = await Pattern.findById(pattern._id);
 
       expect(response.status).toBe(401);
       expect(response.body).toEqual({ message: "Could not verify token" });
+      expect(testPattern).toBeTruthy();
     });
 
     test("When the token is invalid, the account deletion attempt is rejected", async () => {
       const response = await request(app).delete("/api/users/me");
 
+      const testPattern = await Pattern.findById(pattern._id);
+
+      expect(response.status).toBe(401);
+
       expect(response.status).toBe(401);
       expect(response.body).toEqual({ message: "Could not verify token" });
+      expect(testPattern).toBeTruthy();
     });
   });
 });

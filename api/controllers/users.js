@@ -1,4 +1,6 @@
 const User = require("../models/users");
+const Pattern = require("../models/patterns");
+
 const { generateToken } = require("../utils/jwt_token_utils");
 const { hashPassword } = require("../utils/encryption_utils");
 const { isUsernameAlreadyInUse, isEmailAlreadyInUse, formatUserData } = require("../utils/data_validation");
@@ -138,6 +140,8 @@ exports.deleteUserAccount = async (req, res, next) => {
         }
  
         const isUserDeleted = await User.deleteOne({ _id: userId });
+        const arePatternsDeleted = await Pattern.deleteMany({ user: userId });
+        console.log("Is pattern deleted", arePatternsDeleted);
 
         if (isUserDeleted.deletedCount == 1) {
             res.status(201).send({ message: "User successfully deleted" });
