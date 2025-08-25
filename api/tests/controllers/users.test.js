@@ -336,17 +336,5 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
       expect(response.body).toEqual({ message: "Could not verify token" });
       expect(testPattern).toBeTruthy();
     });
-
-    test("When the token is invalid, the account deletion attempt is rejected", async () => {
-      const response = await request(app).delete("/api/users/me");
-
-      const testPattern = await Pattern.findById(pattern._id);
-
-      expect(response.status).toBe(401);
-
-      expect(response.status).toBe(401);
-      expect(response.body).toEqual({ message: "Could not verify token" });
-      expect(testPattern).toBeTruthy();
-    });
   });
 });
