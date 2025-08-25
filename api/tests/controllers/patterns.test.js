@@ -441,9 +441,9 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
     test("If the token is malformed or expired, return 401 - Could not validate token", async () => {
       const expiredToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjc5YTVkMTg5Mzk3ZDUxNDA3NjE3ZWRmIiwiaWF0IjoxNzU1MjY4NDYyLCJleHAiOjE3NTUyNjkwNjJ9.Oqy48kRFvYEK15dWBb1hpXLpCCC_rDMX0BWqoqxRmFk";
       const badCookie = `token=${expiredToken}; HttpOnly; Path=/; Secure`;
-       const response = await request(app)
+      const response = await request(app)
         .get(`/api/patterns/${pattern._id}`)
-         .set("Cookie", badCookie);
+        .set("Cookie", badCookie);
       
       expect(response.status).toBe(401);
       expect(response.body).toEqual({ message: "Could not verify token" });
@@ -546,6 +546,79 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
       expect(response.body).toEqual({
         message: "Could not verify token",
       });
+    });
+  });
+
+  describe("DELETE - deletePatternById", () => {
+    let token;
+    let user;
+    let userId;
+    let cookie;
+    let pattern;
+
+    beforeEach(async () => {
+      user = new User({
+        username: "testUser",
+        email: "test@email.com",
+        password: "password",
+      });
+
+      pattern = new Pattern({
+        jumperShape: "top-down-raglan",
+        chestCircumference: 10,
+        armLength: 10,
+        bodyLength: 10,
+        easeAmount: 10,
+        knittingGauge: 10,
+        patternName: "Test Pattern",
+        user: new mongoose.Types.ObjectId(user._id),
+      });
+
+      await user.save();
+      await pattern.save();
+      token = generateToken(user._id);
+      userId = user._id;
+      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+    });
+
+    afterEach(async () => {
+      await User.deleteMany();
+      await Pattern.deleteMany();
+    });
+
+    test("When the user is logged in and the pattern exists in the database, it gets deleted", async () => { 
+      const response = await request(app)
+        .delete(`/api/patterns/${pattern._id}`)
+        .set("Cookie", cookie);
+
+      expect(response.body).toEqual({
+        message: `Pattern ${pattern._id} successfully deleted`,
+      });
+      expect(response.statusCode).toBe(201);
+    });
+
+    test("When the user is logged in but the pattern doesn't exist, a 404 is thrown", async () => {
+      const nonExistentPatternId = new mongoose.Types.ObjectId();
+      const response = await request(app)
+        .delete(`/api/patterns/${nonExistentPatternId}`)
+        .set("Cookie", cookie);
+
+      expect(response.body).toEqual({
+        message: `Pattern not found`,
+      });
+      expect(response.statusCode).toBe(404);
+    });
+
+    test("When the token is invalid, the pattern deletion attempt is rejected", async () => {
+      const response = await request(app)
+        .delete(`/api/patterns/${pattern._id}`)
+        .set("Cookie", "bad cookie");
+
+      const testPattern = await Pattern.findById(pattern._id);
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Could not verify token" });
+      expect(testPattern).toBeTruthy();
     });
   });
 });

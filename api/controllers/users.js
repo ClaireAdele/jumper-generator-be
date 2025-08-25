@@ -119,7 +119,7 @@ exports.updateUser = async (req, res, next) => {
         res.cookie("token", token, {
           httpOnly: true,
           sameSite: "Lax",
-          maxAge: Math.floor(Date.now() / 1000) + 10 * 60,
+          maxAge: 1000 * 10 * 60,
         });
 
         const updatedUser = formatUserData(userToUpdate);
@@ -148,6 +148,11 @@ exports.deleteUserAccount = async (req, res, next) => {
         } else { 
             throw new CustomError ("Could not delete user, try again later", 500)
         }
+
+        res.clearCookie("token", {
+          httpOnly: true,
+          sameSite: "Lax",
+        });
     }
     catch (error) { 
         next(error);

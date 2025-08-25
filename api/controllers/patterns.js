@@ -128,4 +128,34 @@ const getPatternsByUser = async (req, res, next) => {
   }
 };
 
-module.exports = { savePattern, getPatternById, getPatternsByUser };
+const deletePatternById = async (req, res, next) => {
+  const { patternId } = req.params;
+  const userId = req.userId;
+  
+  try {
+    const isPatternDeleted = await Pattern.deleteOne({ _id: patternId });
+
+    const token = generateToken(userId);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "Lax",
+      maxAge: 1000 * 10 * 60,
+    });
+
+    if (isPatternDeleted.deletedCount == 1) {
+      res.status(201).send({ message: `Pattern ${patternId} successfully deleted` });
+    } else {
+      throw new CustomError("Pattern not found", 404);
+    }
+  } catch (error) {
+    next(error)
+  }
+};
+
+module.exports = {
+  savePattern,
+  getPatternById,
+  getPatternsByUser,
+  deletePatternById,
+};
