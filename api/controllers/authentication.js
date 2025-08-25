@@ -46,4 +46,19 @@ const signInUser = async (req, res, next) => {
     }
 }
 
-module.exports = { signInUser };
+const signOutUser = (req, res, next) => {
+  try { 
+    res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "Lax",
+  });
+
+  res.status(200).json({ message: "Signed out successfully" });
+
+  } catch (error) {
+    console.log(error)
+  }
+  
+}
+
+module.exports = { signInUser, signOutUser };
