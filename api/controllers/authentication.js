@@ -15,7 +15,7 @@ const refreshSession = async (req, res, next) => {
     }
 
     let payload;
-    
+
     try {
       payload = JWT.verify(refreshToken, process.env.JWT_SECRET);
     } catch (err) {
@@ -158,39 +158,36 @@ const resetLoggedInUserPassword = async (req, res, next) => {
     //Send response with success message
     res.status(201).send({message: "User password updated successfully"});
   } catch(error) {
-    console.log("here")
     next(error);
   }
 };
 
-
-const resetLoggedInUserEmail = async (req, res, next) => {
+const requestResetLoggedInUserEmail = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const { oldPassword, newPassword, newEmail } = req.body;
-
-    if (!oldPassword || !newPassword) {
-      throw new CustomError("Password reset failed", 400);
-    }
+    const { password, newEmail } = req.body;
 
     const user = await User.findById(userId);
 
     //Check the user entered the correct password when attempting to save a new one
-    if (!(await comparePasswords(oldPassword, user.password))) {
-      throw new CustomError("Password reset failed", 400);
+    if (!(await comparePasswords(password, user.password))) {
+      throw new CustomError("Email reset failed", 400);
     }
 
-    //Update the user with the new password
-    const hashedPassword = await hashPassword(newPassword);
-    user.password = hashedPassword;
-    await user.save();
-
+    //Send an email to the new user email, and generate a reset token for now.
+    //Log-out the user on all devices (i.e delete any associated user refresh tokens)
+   
     //Send response with success message
-    res.status(201).send({ message: "User password updated successfully" });
+    res.status(201).send({ message: "User e-mail reset requested" });
   } catch (error) {
-    console.log("here");
     next(error);
   }
 };
 
-module.exports = { refreshSession, signInUser, signOutUser, resetLoggedInUserPassword };
+module.exports = {
+  refreshSession,
+  signInUser,
+  signOutUser,
+  resetLoggedInUserPassword,
+  requestResetLoggedInUserEmail,
+};
