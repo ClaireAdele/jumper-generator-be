@@ -1,10 +1,12 @@
 const User = require("../models/users");
 const Pattern = require("../models/patterns");
 
-const { generateToken } = require("../utils/jwt_token_utils");
-const { hashPassword } = require("../utils/encryption_utils");
-const { isUsernameAlreadyInUse, isEmailAlreadyInUse, formatUserData } = require("../utils/data_validation");
 const { CustomError } = require("../errorHandling/customError");
+
+const { generateAccessToken } = require("../utils/jwt_token_utils");
+const { hashPassword } = require("../utils/hashing_utils");
+const { isUsernameAlreadyInUse, isEmailAlreadyInUse, formatUserData } = require("../utils/data_validation");
+const { DURATIONS } = require("../utils/constants");
 
 exports.getSignedInUser = async (req, res, next) => {
     try {
@@ -20,12 +22,12 @@ exports.getSignedInUser = async (req, res, next) => {
           throw new CustomError("User not found", 404);
         }
 
-        const token = generateToken(userId);
+        const token = generateAccessToken(userId);
 
-        res.cookie("token", token, {
+        res.cookie("ACCESS_TOKEN", token, {
           httpOnly: true,
           sameSite: "Lax",
-          maxAge: 1000 * 10 * 60,
+          maxAge: DURATIONS.FIFTEEN_MINUTES,
         });
 
         const signedInUser = formatUserData(user);
@@ -114,12 +116,12 @@ exports.updateUser = async (req, res, next) => {
             );
         }
 
-        const token = generateToken(_id);
+        const token = generateAccessToken(_id);
 
-        res.cookie("token", token, {
+        res.cookie("ACCESS_TOKEN", token, {
           httpOnly: true,
           sameSite: "Lax",
-          maxAge: 1000 * 10 * 60,
+          maxAge: DURATIONS.FIFTEEN_MINUTES,
         });
 
         const updatedUser = formatUserData(userToUpdate);
@@ -149,7 +151,7 @@ exports.deleteUserAccount = async (req, res, next) => {
             throw new CustomError ("Could not delete user, try again later", 500)
         }
 
-        res.clearCookie("token", {
+        res.clearCookie("ACCESS_TOKEN", {
           httpOnly: true,
           sameSite: "Lax",
         });

@@ -1,7 +1,7 @@
 const app = require("../../app");
 const request = require("supertest");
 const User = require("../../models/users");
-const { hashPassword, comparePasswords } = require("../../utils/encryption_utils");
+const { hashPassword, comparePasswords } = require("../../utils/hashing_utils");
 require("../../mongodb_helper");
 
 describe("TESTS FOR /authentication ENDPOINT", () => {
@@ -129,7 +129,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
 
       // The cookie should be cleared
       const clearedCookie = response.headers["set-cookie"][0];
-      expect(clearedCookie).toMatch(/token=;/);
+      expect(clearedCookie).toMatch(/ACCESS_TOKEN=;/);
       expect(clearedCookie).toMatch(/Expires=/);
     });
   });

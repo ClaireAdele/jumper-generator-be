@@ -2,7 +2,7 @@ const app = require("../../app");
 const request = require("supertest");
 const User = require("../../models/users");
 const bcrypt = require("bcrypt");
-const { generateToken } = require("../../utils/jwt_token_utils");
+const { generateAccessToken } = require("../../utils/jwt_token_utils");
 const Pattern = require("../../models/patterns");
 require("../../mongodb_helper");
 
@@ -114,9 +114,9 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
       });
 
       await user.save();
-      token = generateToken(user._id);
+      token = generateAccessToken(user._id);
       userId = user._id;
-      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+      cookie = `ACCESS_TOKEN=${token}; HttpOnly; Path=/; Secure`;
     });
 
     afterEach(async () => {
@@ -185,7 +185,7 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
       });
 
       expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe("Could not verify token");
+      expect(response.body.message).toBe("Could not identify user");
     });
 
     test("When the token is invalid, an auth error is thrown", async () => {
@@ -195,7 +195,7 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
         .send({ username: "updatedTestUser" });
 
       expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe("Could not verify token");
+      expect(response.body.message).toBe("Could not identify user");
     });
 
     test("If the user has been deleted from the database, an error is thrown", async () => {
@@ -231,9 +231,9 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
       });
 
       await testUser2.save();
-      token = generateToken(testUser2._id);
+      token = generateAccessToken(testUser2._id);
       testUserId2 = testUser2._id;
-      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+      cookie = `ACCESS_TOKEN=${token}; HttpOnly; Path=/; Secure`;
     });
 
     afterEach(async () => {
@@ -259,7 +259,7 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
 
       expect(response.status).toBe(401);
       expect(response.body).toEqual({
-        message: "Could not verify token",
+        message: "Could not identify user",
       });
     });
 
@@ -305,9 +305,9 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
       
       await pattern.save();
   
-      token = generateToken(testUser3._id);
+      token = generateAccessToken(testUser3._id);
       testUserId3 = testUser3._id;
-      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+      cookie = `ACCESS_TOKEN=${token}; HttpOnly; Path=/; Secure`;
     });
 
     afterEach(async () => {
@@ -333,7 +333,7 @@ describe("TESTS FOR /users/me ENDPOINT", () => {
       const testPattern = await Pattern.findById(pattern._id);
 
       expect(response.status).toBe(401);
-      expect(response.body).toEqual({ message: "Could not verify token" });
+      expect(response.body).toEqual({ message: "Could not identify user" });
       expect(testPattern).toBeTruthy();
     });
   });

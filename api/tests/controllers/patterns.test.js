@@ -5,8 +5,8 @@ const mongoose = require("mongoose");
 const User = require("../../models/users");
 const Pattern = require("../../models/patterns");
 
-const { hashPassword } = require("../../utils/encryption_utils");
-const { generateToken } = require("../../utils/jwt_token_utils");
+const { hashPassword } = require("../../utils/hashing_utils");
+const { generateAccessToken } = require("../../utils/jwt_token_utils");
 require("../../mongodb_helper");
 
 
@@ -25,9 +25,9 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
       });
 
       await user.save();
-      token = generateToken(user._id);
+      token = generateAccessToken(user._id);
       userId = user._id;
-      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+      cookie = `ACCESS_TOKEN=${token}; HttpOnly; Path=/; Secure`;
     });
 
     afterEach(async () => {
@@ -85,7 +85,7 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
         jumperShape: "top-down-raglan",
       });
 
-      expect(response.body).toEqual({ message: "Could not verify token" });
+      expect(response.body).toEqual({ message: "Could not identify user" });
       expect(response.statusCode).toBe(401)
 
       const count = await Pattern.countDocuments();
@@ -377,9 +377,9 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
 
       await user.save();
       await pattern.save();
-      token = generateToken(user._id);
+      token = generateAccessToken(user._id);
       userId = user._id;
-      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+      cookie = `ACCESS_TOKEN=${token}; HttpOnly; Path=/; Secure`;
     });
 
     afterEach(async () => {
@@ -410,12 +410,12 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
       });
     });
 
-    test("If the user is not logged in, then the server responds with 401 - 'Could not verify token'", async () => {
+    test("If the user is not logged in, then the server responds with 401 - 'Could not identify user'", async () => {
       const response = await request(app)
         .get(`/api/patterns/${pattern._id}`)
       
       expect(response.body).toEqual({
-        message: "Could not verify token"
+        message: "Could not identify user",
       });
     });
 
@@ -446,7 +446,7 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
         .set("Cookie", badCookie);
       
       expect(response.status).toBe(401);
-      expect(response.body).toEqual({ message: "Could not verify token" });
+      expect(response.body).toEqual({ message: "Could not identify user" });
     })
   });
 
@@ -488,12 +488,12 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
 
       await user.save();
       await pattern.save();
-      token = generateToken(user._id);
-      tokenTwo = generateToken(userTwo._id);
+      token = generateAccessToken(user._id);
+      tokenTwo = generateAccessToken(userTwo._id);
       userId = user._id;
       userTwoId = userTwo._id;
-      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
-      cookieTwo = `token=${tokenTwo}; HttpOnly; Path=/; Secure`;
+      cookie = `ACCESS_TOKEN=${token}; HttpOnly; Path=/; Secure`;
+      cookieTwo = `ACCESS_TOKEN=${tokenTwo}; HttpOnly; Path=/; Secure`;
     });
 
     afterEach(async () => {
@@ -538,13 +538,11 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
       });
     });
 
-    test("If the user is not logged in, then the server responds with 401 - 'Could not verify token'", async () => {
-      const response = await request(app).get(
-        "/api/patterns/my-patterns"
-      );
+    test("If the user is not logged in, then the server responds with 401 - 'Could not identify user'", async () => {
+      const response = await request(app).get("/api/patterns/my-patterns");
 
       expect(response.body).toEqual({
-        message: "Could not verify token",
+        message: "Could not identify user",
       });
     });
   });
@@ -576,9 +574,9 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
 
       await user.save();
       await pattern.save();
-      token = generateToken(user._id);
+      token = generateAccessToken(user._id);
       userId = user._id;
-      cookie = `token=${token}; HttpOnly; Path=/; Secure`;
+      cookie = `ACCESS_TOKEN=${token}; HttpOnly; Path=/; Secure`;
     });
 
     afterEach(async () => {
@@ -617,7 +615,7 @@ describe("TESTS FOR /patterns ENDPOINT", () => {
       const testPattern = await Pattern.findById(pattern._id);
 
       expect(response.status).toBe(401);
-      expect(response.body).toEqual({ message: "Could not verify token" });
+      expect(response.body).toEqual({ message: "Could not identify user" });
       expect(testPattern).toBeTruthy();
     });
   });
