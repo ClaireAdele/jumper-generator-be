@@ -68,8 +68,6 @@ exports.validatePatternData = (requestBody) => {
         return !requiredFieldValue || typeof (requiredFieldValue) != "number" || requiredFieldValue <= 0;
     });
 
-    console.log(missingOrIncorrectFields)
-
     if (missingOrIncorrectFields.length > 0) {
       return false;
     }
