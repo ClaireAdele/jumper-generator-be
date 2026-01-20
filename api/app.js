@@ -7,7 +7,6 @@ const {
   globalErrorHandler,
 } = require("./errorHandling/errorHandlers.js");
 
-
 const app = express();
 
 const apiRouter = require("./routers/apiRouter.js")
