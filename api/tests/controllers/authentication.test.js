@@ -104,6 +104,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         email: "auth_test@email.com",
         password: await hashPassword("password"),
       });
+
       await user.save();
 
       const response = await request(app)
@@ -111,13 +112,14 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         .send({ email: user.email, password: "password" });
 
       cookie = response.headers["set-cookie"];
+      console.log("cookie", cookie);
     });
 
     afterEach(async () => {
       await User.deleteMany();
     });
 
-    test("When the user attempts to sign out, the token cookie is cleared and response confirms sign-out", async () => {
+    test("When the user attempts to sign out, the ACCESS_TOKEN and REFRESH_TOKEN cookies are cleared and response confirms sign-out", async () => {
       const response = await request(app)
         .post("/api/authentication/sign-out-user")
         .set("Cookie", cookie);
@@ -128,9 +130,19 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
       });
 
       // The cookie should be cleared
-      const clearedCookie = response.headers["set-cookie"][0];
-      expect(clearedCookie).toMatch(/ACCESS_TOKEN=;/);
-      expect(clearedCookie).toMatch(/Expires=/);
+      const clearedAccessCookie = response.headers["set-cookie"][0];
+      expect(clearedAccessCookie).toMatch(/ACCESS_TOKEN=;/);
+      expect(clearedAccessCookie).toMatch(/Expires=/);
+
+      const clearedRefreshCookie = response.headers["set-cookie"][1];
+      expect(clearedRefreshCookie).toMatch(/REFRESH_TOKEN=;/);
+      expect(clearedRefreshCookie).toMatch(/Expires=/);
+    });
+
+    test("When the user signs out successfully, the refresh token associated with the device they log-out from is blacklisted", async () => {
+      const response = await request(app)
+        .post("/api/authentication/sign-out-user")
+        .set("Cookie", cookie);
     });
   });
 

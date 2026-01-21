@@ -13,7 +13,7 @@ exports.comparePasswords = async (inputPassword, userPassword) => {
   return passwordsMatch;
 }
 
-exports.createSecuretRawToken = () => {
+exports.createSecureRawToken = () => {
   const rawToken = crypto.randomBytes(32).toString("hex");
 
   return rawToken;
