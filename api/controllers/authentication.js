@@ -3,6 +3,7 @@ const RefreshToken = require("../models/refreshToken");
 
 const { CustomError } = require("../errorHandling/customError");
 const { Resend } = require("resend");
+const JWT = require("jsonwebtoken");
 
 const { comparePasswords, hashPassword, hashTokens } = require("../utils/hashing_utils");
 const { generateAccessToken, generateRefreshToken } = require("../utils/jwt_token_utils");
@@ -14,7 +15,7 @@ const refreshSession = async (req, res, next) => {
     const refreshToken = req.cookies?.REFRESH_TOKEN;
 
     if (!refreshToken) {
-      throw CustomError("No refresh token provided", 401);
+      throw new CustomError("Could not identify user", 401);
     }
 
     let payload;
@@ -25,38 +26,51 @@ const refreshSession = async (req, res, next) => {
       /*Edge case - if for some reason the token is invalid/expired but hasn't been purged from my db,
         blacklist on the spot*/
       const hashedRefreshToken = hashTokens(refreshToken);
-      const storedToken = await RefreshToken.findOne({
-        tokenHash: hashedRefreshToken,
-      });
+      await RefreshToken.findOneAndUpdate(
+        {
+          tokenHash: hashedRefreshToken,
+        },
+        { blacklisted: true },
+      );
 
-      if (storedToken && !storedToken.blacklisted) {
-        storedToken.blacklisted = true;
-        await storedToken.save();
-      }
-
-      throw CustomError("Could not identify user", 401);
+      throw new CustomError("Could not identify user", 401);
     }
 
     // Token is valid: check DB
     const hashedRefreshToken = hashTokens(refreshToken);
-    const storedToken = await RefreshToken.findOne({
+    const storedToken = await RefreshToken.findOneAndUpdate({
       tokenHash: hashedRefreshToken,
       user: payload.user_id,
-    });
-
+    }, { blacklisted: true });
+    
     //Case 1: A hacker might be using a refreshToken that has been deleted from my db mistakenly but is still technically valid
     //Case 2: If the refresh token is blacklisted, don't grant a new access token
     if (!storedToken || storedToken.blacklisted) {
-      throw CustomError("Could not identify user", 401);
+      throw new CustomError("Could not identify user", 401);
     }
 
     // Generate new access token
     const accessToken = generateAccessToken(payload.user_id);
 
+    //Generate new refresh token
+    const newRefreshToken = generateRefreshToken(payload.user_id);
+    const newHashedRefreshToken = hashTokens(newRefreshToken);
+
+    await new RefreshToken({
+      user: payload.user_id,
+      tokenHash: newHashedRefreshToken,
+    }).save();
+
     res.cookie("ACCESS_TOKEN", accessToken, {
       httpOnly: true,
       sameSite: "Lax",
       maxAge: DURATIONS.FIFTEEN_MINUTES,
+    });
+
+    res.cookie("REFRESH_TOKEN", newRefreshToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      maxAge: DURATIONS.THIRTY_DAYS,
     });
 
     res.status(200).json({ message: "Session renewed successfully" });
