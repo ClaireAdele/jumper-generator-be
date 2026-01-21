@@ -104,8 +104,9 @@ const signInUser = async (req, res, next) => {
       throw new CustomError("Invalid e-mail or password", 400);
     }
 
-    //Check if device is known to my system, and if not, generate a device id to pair up with the refresh token in db.
-    //If known, still pair up with new refresh cookie that I am issuing. 
+    /*Check if device is known to my system, and if not, generate a device id to pair up with the refresh token in db.
+     * If known, pair up with new refresh cookie that I am issuing. 
+     */
     let deviceId = req.cookies?.DEVICE_ID;
 
     if (!deviceId) {
@@ -254,6 +255,7 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
     const resetToken = new ResetToken({
       user: userId,
       tokenHash: hashedResetToken,
+      pendingEmail: newEmail
     });
 
     await resetToken.save();
@@ -287,10 +289,82 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
   }
 };
 
-const activateNewEmail = () => {
-  //The endpoint that will be called once the user confirms their email reset
-  //
-}
+const activateNewEmail = async () => {
+  try {
+    const { resetToken } = req.body;
+    //I will send my userid as part of my url in the email to I have both token and uid.
+    const userId = req.params;
+
+    if (!resetToken) {
+      throw new CustomError("Could not activate new e-mail", 401);
+      //Need to figure out flow here, probably will need to send a fresh e-mail and token if this is failing.
+      //Might even need to limit attempts amount?
+    }
+
+    const hashedResetToken = hashToken(resetToken);
+
+    /*Immediately invalidate the used token in the database*/
+    const storedResetToken = ResetToken.findOneAndUpdate(
+      {
+        tokenHash: hashedResetToken,
+        user: userId,
+      },
+      { used: true },
+    );
+
+    /*If the token I just attempted to invalidate was either non-existent in the be or already used, prevent operation*/
+    if (!storedResetToken || storedToken.used) {
+      throw new CustomError("Could not activate new e-mail", 401);
+    }
+
+    /*Set the value of the email field in the user to the pending e-mail requested.*/
+    const loggedInUser = await User.findOneAndUpdate({ _id: userId }, { email: storedResetToken.pendingEmail });
+
+    /*Issue user new access and refresh tokens.
+    * EDGE CASE: Invalidate any leftover refresh tokens if they exist on the system 
+    * (they shouldn't be, but worth making sure they are all 100% invalidated)*/
+    await RefreshToken.updateMany({ user: userId }, { blacklisted: true });
+
+    const refreshToken = generateRefreshToken(userId);
+    const hashedRefreshToken = hashToken(refreshToken);
+
+    /* Check if device is known to my system, and if not, generate a device id to pair up with the refresh token in db.
+     * If known, pair up with new refresh cookie that I am issuing. If device is not known, create new tracking*/
+    let deviceId = req.cookies?.DEVICE_ID;
+
+    if (!deviceId) {
+      deviceId = createSecureRawToken();
+
+      res.cookie("DEVICE_ID", deviceId, {
+        httpOnly: true,
+        sameSite: "Lax",
+        maxAge: DURATIONS.ONE_YEAR,
+      });
+    }
+
+    const hashedDeviceId = hashToken(deviceId);
+
+    await new RefreshToken({
+      user: userId,
+      tokenHash: hashedRefreshToken,
+      deviceIdHash: hashedDeviceId,
+    }).save();
+
+     res.cookie("ACCESS_TOKEN", accessToken, {
+       httpOnly: true,
+       sameSite: "Lax",
+       maxAge: DURATIONS.FIFTEEN_MINUTES,
+     });
+
+     res.cookie("REFRESH_TOKEN", newRefreshToken, {
+       httpOnly: true,
+       sameSite: "Lax",
+       maxAge: DURATIONS.THIRTY_DAYS,
+     });
+  } catch (error) {
+    next(error);
+  }
+};
 
 //will need a flow that involves email here
 const requestForgottenPasswordReset = () => { 
