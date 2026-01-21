@@ -13,13 +13,13 @@ exports.comparePasswords = async (inputPassword, userPassword) => {
   return passwordsMatch;
 }
 
-exports.createPasswordResetRawToken = () => {
+exports.createSecuretRawToken = () => {
   const rawToken = crypto.randomBytes(32).toString("hex");
 
   return rawToken;
 }
 
-exports.hashTokens = (rawToken) => {
+exports.hashToken = (rawToken) => {
   const tokenHash = crypto
     .createHash("sha256")
     .update(rawToken)
