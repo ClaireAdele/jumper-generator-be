@@ -198,7 +198,6 @@ const signOutUser = async (req, res, next) => {
 
     res.status(200).json({ message: "Signed out successfully" });
   } catch (error) {
-    console.log(error)
     next(error)
   }
 }
@@ -207,6 +206,8 @@ const resetLoggedInUserPassword = async (req, res, next) => {
   try {
     const userId = req.userId;
     const { oldPassword, newPassword } = req.body;
+
+    console.log(oldPassword, newPassword)
 
     if (!oldPassword || !newPassword) {
       throw new CustomError("Password reset failed", 400);
@@ -226,7 +227,7 @@ const resetLoggedInUserPassword = async (req, res, next) => {
 
     //Log-out the user from all other sessions on other devices
     await RefreshToken.updateMany(
-      { user: userId, deviceIdHash: { $ne: hashedDeviceId } },
+      { user: userId },
       { blacklisted: true },
     );
 

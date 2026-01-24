@@ -1,7 +1,9 @@
 const app = require("../../app");
 const request = require("supertest");
 const User = require("../../models/users");
-const { hashPassword, comparePasswords } = require("../../utils/hashing_utils");
+const { hashPassword, comparePasswords, hashToken, createSecureRawToken } = require("../../utils/hashing_utils");
+const { DURATIONS } = require("../../utils/constants");
+const RefreshToken = require("../../models/RefreshToken");
 require("../../mongodb_helper");
 
 describe("TESTS FOR /authentication ENDPOINT", () => {
@@ -24,7 +26,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
       await User.deleteMany();
     });
 
-    test("When a user exists in the database, and the request is built correctly, the user is signed-in successfully", async () => {
+    test("When a user exists in the database, and the request is built correctly, the user is signed-in successfully and the correct cookies are set on the response", async () => {
       const response = await request(app)
         .post("/api/authentication")
         .send({
@@ -40,6 +42,68 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
           email: "auth_test@email.com"
         }
       });
+
+      // The cookies should be set correctly
+      const deviceId = response.headers["set-cookie"][0];
+      expect(deviceId).toMatch(/DEVICE_ID=/);
+      expect(deviceId).toMatch(/Expires=/);
+
+      const accessCookie = response.headers["set-cookie"][1];
+      expect(accessCookie).toMatch(/ACCESS_TOKEN=/);
+      expect(accessCookie).toMatch(/Expires=/);
+
+      const refreshCookie = response.headers["set-cookie"][2];
+      expect(refreshCookie).toMatch(/REFRESH_TOKEN=/);
+      expect(refreshCookie).toMatch(/Expires=/);
+    });
+
+    test("When a user exists in the database, and the request is built correctly, a refresh token is stored correctly in the database, with the correct associated session information", async () => {
+      const response = await request(app).post("/api/authentication").send({
+        email: "auth_test@email.com",
+        password: "password",
+      });
+
+      const [savedRefreshToken] = await RefreshToken.find({ user: user._id });
+
+      //The refresh token should exist in the database and be registered to that use
+      expect(savedRefreshToken).toBeTruthy();
+
+      // The information sent back as cookies should match the session data in the database
+      const deviceId = response.headers["set-cookie"][0]
+        .split(";")[0]
+        .split("=")[1];
+      
+      const refreshToken = response.headers["set-cookie"][2]
+        .split(";")[0]
+        .split("=")[1];
+      
+      const hashedDeviceId = hashToken(deviceId);
+      const hashedRefreshToken = hashToken(refreshToken);
+
+      expect(savedRefreshToken.tokenHash).toEqual(hashedRefreshToken);
+      expect(savedRefreshToken.deviceIdHash).toEqual(hashedDeviceId);
+    });
+
+    test("When a user exists in the database, and their device has been logged-in from before, the refresh token created in the db uses this device id instead of generating a new one", async () => {
+      const deviceId = createSecureRawToken();
+      const hashedDeviceId = hashToken(deviceId); 
+
+      const cookie = `DEVICE_ID=${deviceId}; HttpOnly; Path=/; Secure`;
+
+      await request(app)
+        .post("/api/authentication")
+        .send({
+          email: "auth_test@email.com",
+          password: "password",
+        })
+        .set("Cookie", cookie);
+
+      const [savedRefreshToken] = await RefreshToken.find({ user: user._id });
+
+      //The refresh token should exist in the database and be registered to that user
+      expect(savedRefreshToken).toBeTruthy();
+      //The device id associated to the new session should be the same as the one we received from cookies
+      expect(savedRefreshToken.deviceIdHash).toEqual(hashedDeviceId);
     });
       
     test("When the e-mail is unspecified, the user cannot sign-in", async () => {
@@ -112,7 +176,6 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         .send({ email: user.email, password: "password" });
 
       cookie = response.headers["set-cookie"];
-      console.log("cookie", cookie);
     });
 
     afterEach(async () => {
@@ -175,7 +238,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         .patch("/api/authentication/password-reset-authenticated-user")
         .send({ oldPassword: "password", newPassword: "newPassword" })
         .set("Cookie", cookie);
-
+      
       expect(response.status).toBe(201);
       expect(response.body).toEqual({
         message: "User password updated successfully",
@@ -206,5 +269,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
       );
       expect(isPasswordChanged).toBeTruthy();
     });
+
+    //TODO: WRITE A TEST TO CHECK THAT THERE ARE NO MORE REFRESH TOKENS FOR THIS USER IN DB AFTER THE RESET
   });
 });
