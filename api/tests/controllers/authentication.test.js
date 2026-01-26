@@ -159,7 +159,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
   
   describe("POST - signOutUser", () => {
     let user;
-    let token;
+    let accessTokenCookie;
     let cookie;
 
     beforeEach(async () => {
@@ -176,6 +176,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         .send({ email: user.email, password: "password" });
 
       cookie = response.headers["set-cookie"];
+      accessTokenCookie = response.headers["set-cookie"][1];
     });
 
     afterEach(async () => {
@@ -203,15 +204,29 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
     });
 
     test("When the user signs out successfully, the refresh token associated with the device they log-out from is blacklisted", async () => {
-      const response = await request(app)
+      await request(app)
         .post("/api/authentication/sign-out-user")
         .set("Cookie", cookie);
+
+      const [ blacklistedRefreshToken ] = await RefreshToken.find({ user: user._id });
+
+      expect(blacklistedRefreshToken.blacklisted).toBe(true);
+    });
+
+    test("When there is no active session, the user cannot log-out", async () => {
+      const response = await request(app)
+        .post("/api/authentication/sign-out-user")
+        .set("Cookie", accessTokenCookie);
+      
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({
+          message: "No active session found",
+        });
     });
   });
 
   describe("PATCH - resetLoggedInUserPassword", () => {
     let user;
-    let token;
     let cookie;
 
     beforeEach(async () => {
@@ -269,6 +284,48 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
       );
       expect(isPasswordChanged).toBeTruthy();
     });
+
+    test("When the request is missing the newPassword or the oldPassword, it fails", async () => {
+      const response = await request(app)
+        .patch("/api/authentication/password-reset-authenticated-user")
+        .set("Cookie", cookie);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        message: "Password reset failed",
+      });
+    });
+
+    test("Once a user has sent a request to reset their password, they should get logged out of every other session", async () => {
+      //TODO - to properly test this I need to create one extra refreshToken in DB for that device.
+      const mockRefreshToken = new RefreshToken({
+        user: user._id,
+        tokenHash: "mockHash",
+        deviceIdHash: "mockHash",
+      });
+
+      await mockRefreshToken.save();
+
+      await request(app)
+        .patch("/api/authentication/password-reset-authenticated-user")
+        .send({ oldPassword: "password", newPassword: "newPassword" })
+        .set("Cookie", cookie);
+      
+      const deviceId = cookie[0]
+        .split(";")[0]
+        .split("=")[1];
+      const hashedDevicedId = hashToken(deviceId);
+
+      const blackListedRefreshTokens = await RefreshToken.find({
+        user: user._id,
+      });
+
+      blackListedRefreshTokens.map((refreshToken) => {
+        if (refreshToken.deviceIdHash != hashedDevicedId) {
+          expect(refreshToken.blacklisted).toBe(true);
+        }
+      });
+    })
 
     //TODO: WRITE A TEST TO CHECK THAT THERE ARE NO MORE REFRESH TOKENS FOR THIS USER IN DB AFTER THE RESET
   });

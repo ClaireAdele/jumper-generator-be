@@ -1,5 +1,4 @@
 exports.globalErrorHandler = (err, req, res, next) => {
-  console.log(err)
   if (err.name === "CastError") {
     return res.status(400).send({ message: "Invalid ID format" });
   } else if (err._message) {
@@ -13,7 +12,6 @@ exports.globalErrorHandler = (err, req, res, next) => {
 
 //Middleware error-handler handles any errors I might have missed in my custom error-handling & testing.
 exports.handleUnknownError = (err, req, res, next) => {
-  console.log(err)
   res.status(500).send({ message: "Unknown error - try again later" });
 };
 

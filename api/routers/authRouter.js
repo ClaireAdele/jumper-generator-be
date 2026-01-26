@@ -11,7 +11,7 @@ const authResetChecker = require("../middleware/authResetChecker");
 const { handleInvalidMethod } = require("../errorHandling/errorHandlers");
 
 authRouter.post("/", signInUser);
-authRouter.post("/sign-out-user", signOutUser);
+authRouter.post("/sign-out-user", tokenChecker, signOutUser);
 authRouter.patch("/password-reset-authenticated-user", tokenChecker, resetLoggedInUserPassword);
 // authRouter.post("/password-reset-forgotten-password-request", requestForgottenPaswordChange);
 // authRouter.patch("/password-reset-forgotten-password-request", authResetChecker, resetForgottenPassword);

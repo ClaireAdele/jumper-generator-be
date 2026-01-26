@@ -173,13 +173,14 @@ const signOutUser = async (req, res, next) => {
     const deviceId = req.cookies?.DEVICE_ID;
 
     if (!refreshToken || !deviceId) {
-      return res.status(400).json({ message: "No active session found" });
+      throw new CustomError("No active session found", 400);
     }
 
     /*Clear refresh tokens for associated device - there should only be the one, 
     but better blacklist any extra if they happen to be there*/
     const hashedDeviceId = hashToken(deviceId);
-    await RefreshToken.updateMany({
+  
+    const blacklistedToken = await RefreshToken.updateMany({
       user: req.userId,
       deviceIdHash: hashedDeviceId,
     }, { blacklisted: true });
@@ -206,8 +207,7 @@ const resetLoggedInUserPassword = async (req, res, next) => {
   try {
     const userId = req.userId;
     const { oldPassword, newPassword } = req.body;
-
-    console.log(oldPassword, newPassword)
+    const deviceId = req.cookies?.DEVICE_ID;
 
     if (!oldPassword || !newPassword) {
       throw new CustomError("Password reset failed", 400);
@@ -225,9 +225,11 @@ const resetLoggedInUserPassword = async (req, res, next) => {
     user.password = hashedPassword; 
     await user.save();
 
+    const hashedDeviceId = hashToken(deviceId);
+
     //Log-out the user from all other sessions on other devices
     await RefreshToken.updateMany(
-      { user: userId },
+      { user: userId, deviceIdHash: { $ne: hashedDeviceId } },
       { blacklisted: true },
     );
 
