@@ -282,8 +282,6 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
     }
 
     //Here I will blacklist all associated users refresh token
-    const refreshTokensToBlacklist = await RefreshToken.find({ user: user._id });
-
     await RefreshToken.updateMany({ user: user._id }, { blacklisted: true });
 
     //Send response with success message
@@ -293,11 +291,11 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
   }
 };
 
-const activateNewEmail = async () => {
+const activateNewEmail = async (req, res, next) => {
   try {
     const { resetToken } = req.body;
     //I will send my userid as part of my url in the email to I have both token and uid.
-    const userId = req.params;
+    const { userId } = req.params;
 
     if (!resetToken) {
       throw new CustomError("Could not activate new e-mail", 401);
@@ -308,7 +306,7 @@ const activateNewEmail = async () => {
     const hashedResetToken = hashToken(resetToken);
 
     /*Immediately invalidate the used token in the database*/
-    const storedResetToken = ResetToken.findOneAndUpdate(
+    const storedResetToken = await ResetToken.findOneAndUpdate(
       {
         tokenHash: hashedResetToken,
         user: userId,
@@ -317,12 +315,20 @@ const activateNewEmail = async () => {
     );
 
     /*If the token I just attempted to invalidate was either non-existent in the be or already used, prevent operation*/
-    if (!storedResetToken || storedToken.used) {
+    if (
+      !storedResetToken ||
+      storedResetToken.used ||
+      storedResetToken.expiresAt < Date.now()
+    ) {
       throw new CustomError("Could not activate new e-mail", 401);
     }
 
     /*Set the value of the email field in the user to the pending e-mail requested.*/
-    const loggedInUser = await User.findOneAndUpdate({ _id: userId }, { email: storedResetToken.pendingEmail });
+    const user = await User.findOneAndUpdate({ _id: userId }, { email: storedResetToken.pendingEmail });
+
+    if (!user) {
+       throw new CustomError("Could not activate new e-mail", 401);
+    }
 
     /*Issue user new access and refresh tokens.
     * EDGE CASE: Invalidate any leftover refresh tokens if they exist on the system 
@@ -330,6 +336,7 @@ const activateNewEmail = async () => {
     await RefreshToken.updateMany({ user: userId }, { blacklisted: true });
 
     const refreshToken = generateRefreshToken(userId);
+    const accessToken = generateAccessToken(userId);
     const hashedRefreshToken = hashToken(refreshToken);
 
     /* Check if device is known to my system, and if not, generate a device id to pair up with the refresh token in db.
@@ -360,12 +367,15 @@ const activateNewEmail = async () => {
        maxAge: DURATIONS.FIFTEEN_MINUTES,
      });
 
-     res.cookie("REFRESH_TOKEN", newRefreshToken, {
+     res.cookie("REFRESH_TOKEN", refreshToken, {
        httpOnly: true,
        sameSite: "Lax",
        maxAge: DURATIONS.THIRTY_DAYS,
      });
+    
+    res.status(201).json({ message: "New user e-mail activated" });
   } catch (error) {
+    console.log(error)
     next(error);
   }
 };
@@ -385,4 +395,5 @@ module.exports = {
   signOutUser,
   resetLoggedInUserPassword,
   requestResetLoggedInUserEmail,
+  activateNewEmail,
 };

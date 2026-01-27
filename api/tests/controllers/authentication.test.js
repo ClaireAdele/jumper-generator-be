@@ -1,10 +1,16 @@
 const app = require("../../app");
 const request = require("supertest");
+
 const User = require("../../models/users");
+const RefreshToken = require("../../models/RefreshToken");
+const ResetToken = require("../../models/ResetToken");
+
 const { hashPassword, comparePasswords, hashToken, createSecureRawToken } = require("../../utils/hashing_utils");
 const { DURATIONS } = require("../../utils/constants");
-const RefreshToken = require("../../models/RefreshToken");
+
+const { ObjectId } = require("mongodb");
 require("../../mongodb_helper");
+
 
 describe("TESTS FOR /authentication ENDPOINT", () => {
   describe("POST - signInUser", () => {
@@ -24,6 +30,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         
     afterEach(async () => {
       await User.deleteMany();
+      await RefreshToken.deleteMany();
     });
 
     test("When a user exists in the database, and the request is built correctly, the user is signed-in successfully and the correct cookies are set on the response", async () => {
@@ -181,6 +188,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
 
     afterEach(async () => {
       await User.deleteMany();
+      await RefreshToken.deleteMany();
     });
 
     test("When the user attempts to sign out, the ACCESS_TOKEN and REFRESH_TOKEN cookies are cleared and response confirms sign-out", async () => {
@@ -246,6 +254,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
 
     afterEach(async () => {
       await User.deleteMany();
+      await RefreshToken.deleteMany();
     });
 
     test("When a signed-in user attempts to reset their passwords, they should succeed if they entered their old password correctly", async () => {
@@ -297,7 +306,6 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
     });
 
     test("Once a user has sent a request to reset their password, they should get logged out of every other session", async () => {
-      //TODO - to properly test this I need to create one extra refreshToken in DB for that device.
       const mockRefreshToken = new RefreshToken({
         user: user._id,
         tokenHash: "mockHash",
@@ -324,9 +332,151 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         if (refreshToken.deviceIdHash != hashedDevicedId) {
           expect(refreshToken.blacklisted).toBe(true);
         }
+        if (refreshToken.deviceIdHash == hashedDevicedId) {
+          expect(refreshToken.blacklisted).toBe(false);
+        }
       });
-    })
+    });
+  });
 
-    //TODO: WRITE A TEST TO CHECK THAT THERE ARE NO MORE REFRESH TOKENS FOR THIS USER IN DB AFTER THE RESET
+  describe("PATCH - activateNewEmail", () => {
+    let user;
+    let resetToken;
+
+    beforeEach(async () => {
+      user = new User({
+        username: "AuthTestUser",
+        email: "auth_test@email.com",
+        password: await hashPassword("password"),
+      });
+      await user.save();
+
+      resetToken = createSecureRawToken();
+      const hashedResetToken = hashToken(resetToken);
+
+      const savedResetToken = new ResetToken({
+        user: user._id,
+        tokenHash: hashedResetToken,
+        pendingEmail: "new@email.com",
+      });
+
+      await savedResetToken.save();
+    });
+
+    afterEach(async () => {
+      await User.deleteMany();
+      await ResetToken.deleteMany();
+      await RefreshToken.deleteMany();
+    });
+
+    /*Test scenarios: 
+
+    - Reset token has already been used
+    */
+    test("When the reset token is valid and the user exists, the e-mail is set to the new value and the user is issued a new valid session", async () => {
+      const response = await request(app)
+        .patch(`/api/authentication/email-reset-activate-new-email/${user._id}`)
+        .send({ resetToken })
+      
+      expect(response.body).toEqual({ message: "New user e-mail activated" });
+      expect(response.status).toBe(201);
+      
+      //Check the user is being issued a new valid session on back-end
+      const updatedUser = await User.findById(user._id);
+      const [refreshToken] = await RefreshToken.find({ user: user._id });
+
+      expect(updatedUser.email).toEqual("new@email.com");
+      expect(refreshToken).toBeInstanceOf(RefreshToken);
+
+      //Check the cookies are being set as well
+      const deviceId = response.headers["set-cookie"][0];
+      expect(deviceId).toMatch(/DEVICE_ID=/);
+      expect(deviceId).toMatch(/Expires=/);
+
+      const accessCookie = response.headers["set-cookie"][1];
+      expect(accessCookie).toMatch(/ACCESS_TOKEN=/);
+      expect(accessCookie).toMatch(/Expires=/);
+
+      const refreshCookie = response.headers["set-cookie"][2];
+      expect(refreshCookie).toMatch(/REFRESH_TOKEN=/);
+      expect(refreshCookie).toMatch(/Expires=/);
+    });
+
+    test("If the reset token is missing, the email should not get reset and the server should serve an error", async () => {
+      const response = await request(app)
+        .patch(`/api/authentication/email-reset-activate-new-email/${user._id}`)
+      
+      expect(response.body).toEqual({ message: "Could not activate new e-mail" });
+      expect(response.status).toBe(401);
+    });
+
+    test("If the reset token is incorrect, the email should not get reset and the server should serve an error", async () => {
+      const response = await request(app).patch(
+        `/api/authentication/email-reset-activate-new-email/${user._id}`,
+      ).send({resetToken: "invalidResetToken"})
+
+      expect(response.body).toEqual({
+        message: "Could not activate new e-mail",
+      });
+      expect(response.status).toBe(401);
+    });
+
+    test("If the reset token is expired, the email should not get reset and the server should serve an error", async () => {
+      const expiredResetToken = createSecureRawToken();
+      const hashedExpiredResetToken = hashToken(expiredResetToken);
+
+      const savedExpiredResetToken = new ResetToken({
+        user: user._id,
+        tokenHash: hashedExpiredResetToken,
+        pendingEmail: "new@email.com",
+        expiresAt: Date.now() - DURATIONS.FIFTEEN_MINUTES,
+      });
+
+      await savedExpiredResetToken.save();
+
+      const response = await request(app)
+        .patch(`/api/authentication/email-reset-activate-new-email/${user._id}`)
+        .send({ resetToken: expiredResetToken });
+
+      expect(response.body).toEqual({
+        message: "Could not activate new e-mail",
+      });
+      expect(response.status).toBe(401);
+    });
+
+    test("If the reset token has already been used, the email should not get reset and the server should serve an error", async () => {
+      const usedResetToken = createSecureRawToken();
+      const hashedUsedResetToken = hashToken(usedResetToken);
+
+      const savedExpiredResetToken = new ResetToken({
+        user: user._id,
+        tokenHash: hashedUsedResetToken,
+        pendingEmail: "new@email.com",
+        used: true,
+      });
+
+      await savedExpiredResetToken.save();
+
+      const response = await request(app)
+        .patch(`/api/authentication/email-reset-activate-new-email/${user._id}`)
+        .send({ resetToken: usedResetToken });
+
+      expect(response.body).toEqual({
+        message: "Could not activate new e-mail",
+      });
+      expect(response.status).toBe(401);
+    });
+
+    test("If the user doesn't exist/isn't the one associated to the resetToken, then the server will respond with an error", async () => {
+      const id = new ObjectId();
+      const response = await request(app)
+        .patch(`/api/authentication/email-reset-activate-new-email/${id.toHexString()}`)
+        .send({ resetToken })
+      
+      expect(response.body).toEqual({
+        message: "Could not activate new e-mail",
+      });
+      expect(response.status).toBe(401);
+    });
   });
 });
