@@ -13,7 +13,6 @@ const ResetTokenSchema = new mongoose.Schema({
   },
   pendingEmail: {
     type: String,
-    required: true
   },
   expiresAt: {
     type: Date,

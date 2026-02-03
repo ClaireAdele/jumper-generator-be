@@ -10,7 +10,6 @@ const { comparePasswords, hashPassword, hashToken, createSecureRawToken } = requ
 const { generateAccessToken, generateRefreshToken } = require("../utils/jwt_token_utils");
 const { DURATIONS } = require("../utils/constants");
 
-
 const refreshSession = async (req, res, next) => {
   try {
     const refreshToken = req.cookies?.REFRESH_TOKEN;
@@ -25,8 +24,12 @@ const refreshSession = async (req, res, next) => {
     try {
       payload = JWT.verify(refreshToken, process.env.JWT_SECRET);
     } catch (err) {
-      /*EDGE CASE - if for some reason the token is invalid/expired but hasn't been purged from my db,
-        blacklist on the spot*/
+
+      /*
+      * EDGE CASE: 
+      * if for some reason the token is invalid/expired but hasn't been purged from my db, blacklist on the spot.
+      */
+      
       const hashedRefreshToken = hashToken(refreshToken);
       await RefreshToken.findOneAndUpdate(
         {
@@ -49,16 +52,19 @@ const refreshSession = async (req, res, next) => {
       deviceIdHash: hashedDeviceId
     }, { blacklisted: true });
     
-    //Case 1: A hacker might be using a refreshToken that has been deleted from my db mistakenly but is still technically valid
-    //Case 2: If the refresh token is blacklisted, don't grant a new access token
-    if (!storedToken || storedToken.blacklisted) {
+    /* 
+    * Case 1: A hacker might be using a refreshToken that has been deleted from my db mistakenly but is still technically valid.
+    * Case 2: If the refresh token is blacklisted, don't grant a new access token.
+    * Case 3: The refresh token is expired but has yet to be expunged from the db.
+    */
+    if (!storedToken || storedToken.blacklisted || storedToken.expiresAt < Date.now()) {
       throw new CustomError("Could not identify user", 401);
     }
 
     // Generate new access token
     const accessToken = generateAccessToken(payload.user_id);
 
-    //Generate new refresh token
+    // Generate new refresh token
     const newRefreshToken = generateRefreshToken(payload.user_id);
     const newHashedRefreshToken = hashToken(newRefreshToken);
 
@@ -90,7 +96,12 @@ const signInUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      !email ||
+      !password
+    ) {
       throw new CustomError("Invalid e-mail or password", 400);
     }
 
@@ -99,13 +110,15 @@ const signInUser = async (req, res, next) => {
     if (!user) {
       throw new CustomError("Invalid e-mail or password", 400);
     }
-       
-    if (!await comparePasswords(password, user.password)) {
+
+    if (!(await comparePasswords(password, user.password))) {
       throw new CustomError("Invalid e-mail or password", 400);
     }
 
-    /*Check if device is known to my system, and if not, generate a device id to pair up with the refresh token in db.
-     * If known, pair up with new refresh cookie that I am issuing. 
+    /*
+     * Check if device is known to my system:
+     * Case 1: if unnkown, generate a device id to pair up with the refresh token in db.
+     * Case 2: if known, pair up with new refresh cookie that I am issuing.
      */
     let deviceId = req.cookies?.DEVICE_ID;
 
@@ -121,8 +134,11 @@ const signInUser = async (req, res, next) => {
 
     const hashedDeviceId = hashToken(deviceId);
 
-    //EDGE CASE - if this device already have a refresh token for this user that's not expired/blacklisted for whatever reason, blacklist it.
-    const unexpectedValidRefreshToken = await RefreshToken.findOneAndUpdate(
+    /*
+     * EDGE CASE:
+     * if this device already have a refresh token for this user that's not expired/blacklisted, blacklist it.
+     */
+    await RefreshToken.findOneAndUpdate(
       { deviceIdHash: hashedDeviceId, user: user._id, blacklisted: false },
       { blacklisted: true },
     );
@@ -143,7 +159,7 @@ const signInUser = async (req, res, next) => {
       sameSite: "Lax",
       maxAge: DURATIONS.FIFTEEN_MINUTES,
     });
-      
+
     res.cookie("REFRESH_TOKEN", refreshToken, {
       httpOnly: true,
       sameSite: "Lax",
@@ -158,10 +174,12 @@ const signInUser = async (req, res, next) => {
       armCircumference: user.armCircumference ?? undefined,
       bodyLength: user.bodyLength ?? undefined,
       shoulderWidth: user.shoulderWidth ?? undefined,
-      preferredUnit: user.preferredUnit ?? undefined
+      preferredUnit: user.preferredUnit ?? undefined,
     };
 
-    res.status(201).json({ message: "User signed-in successfully", signedInUser });
+    res
+      .status(201)
+      .json({ message: "User signed-in successfully", signedInUser });
   } catch (error) {
     next(error);
   }
@@ -176,11 +194,13 @@ const signOutUser = async (req, res, next) => {
       throw new CustomError("No active session found", 400);
     }
 
-    /*Clear refresh tokens for associated device - there should only be the one, 
-    but better blacklist any extra if they happen to be there*/
+   /*
+    *Clear refresh tokens for associated device - there should only be the one, 
+    * but better blacklist any extra if they happen to be there
+    */
     const hashedDeviceId = hashToken(deviceId);
   
-    const blacklistedToken = await RefreshToken.updateMany({
+    await RefreshToken.updateMany({
       user: req.userId,
       deviceIdHash: hashedDeviceId,
     }, { blacklisted: true });
@@ -203,39 +223,103 @@ const signOutUser = async (req, res, next) => {
   }
 }
 
-const resetLoggedInUserPassword = async (req, res, next) => {
+const resetUserPassword = async (req, res, next) => {
   try {
-    const userId = req.userId;
-    const { oldPassword, newPassword } = req.body;
-    const deviceId = req.cookies?.DEVICE_ID;
+    let userId;
+    let user;
+    const { oldPassword, newPassword, resetToken } = req.body;
+    let deviceId = req.cookies?.DEVICE_ID;
 
-    if (!oldPassword || !newPassword) {
-      throw new CustomError("Password reset failed", 400);
-    }
-
-    const user = await User.findById(userId);
-
-    //Check the user entered the correct password when attempting to save a new one
-    if (!await comparePasswords(oldPassword, user.password)) {
+    if (!newPassword || (!resetToken && !oldPassword)) {
       throw new CustomError("Password reset failed", 400);
     }
     
+    //If it's a forgotten password scenario, I need to validate the reset token before proceeding to the db reset
+    if (resetToken) {
+      const { resetToken } = req.body;
+
+      const hashedResetToken = hashToken(resetToken);
+
+      //Immediately invalidate the used token in the database
+      const storedResetToken = await ResetToken.findOneAndUpdate(
+        {
+          tokenHash: hashedResetToken,
+          used: false,
+        },
+        { used: true },
+      );
+
+      //If the token I just attempted to invalidate was either non-existent in the be or already used, prevent operation
+      if (
+        !storedResetToken ||
+        storedResetToken.used ||
+        storedResetToken.expiresAt < Date.now()
+      ) {
+        throw new CustomError("Could not authorise password reset", 400);
+      }
+
+      userId = storedResetToken.user;
+      user = await User.findById(userId);
+    } else {
+      userId = req.userId;
+
+      user = await User.findById(userId);
+
+      //Check the user entered the correct password when attempting to save a new one
+      if (!(await comparePasswords(oldPassword, user.password))) {
+        throw new CustomError("Password reset failed", 400);
+      }
+    }
+
     //Update the user with the new password
     const hashedPassword = await hashPassword(newPassword);
-    user.password = hashedPassword; 
+    user.password = hashedPassword;
     await user.save();
+
+    //If there was no device id associated to the user's machine, re-issue one and its associated cookie
+    if (!deviceId) {
+      deviceId = createSecureRawToken();
+
+      res.cookie("DEVICE_ID", deviceId, {
+        httpOnly: true,
+        sameSite: "Lax",
+        maxAge: DURATIONS.ONE_YEAR,
+      });
+    }
 
     const hashedDeviceId = hashToken(deviceId);
 
-    //Log-out the user from all other sessions on other devices
-    await RefreshToken.updateMany(
-      { user: userId, deviceIdHash: { $ne: hashedDeviceId } },
-      { blacklisted: true },
-    );
+    /*  
+    * Case 1: User is already logged-in and reset password from their profile: 
+    * -> Log-out the user from all other sessions on other devices but maintain this session:
+    *  
+    * Case 2: User is not logged in on this device, and is doing a forgotten password operation:
+    * -> Log-out user from all sessions and don't re-issue access token
+    */
 
-    //Send response with success message
-    res.status(201).json({message: "User password updated successfully"});
-  } catch(error) {
+    if (!resetToken) {
+      await RefreshToken.updateMany(
+        { user: userId, deviceIdHash: { $ne: hashedDeviceId } },
+        { blacklisted: true },
+      );
+
+      const accessToken = generateAccessToken(userId);
+
+      res.cookie("ACCESS_TOKEN", accessToken, {
+        httpOnly: true,
+        sameSite: "Lax",
+        maxAge: DURATIONS.FIFTEEN_MINUTES,
+      });
+    } else {
+      await RefreshToken.updateMany(
+        { user: userId, },
+        { blacklisted: true },
+      );
+    }
+
+    /*Send response with success message*/
+    res.status(201).json({ message: "User password updated successfully" });
+  } catch (error) {
     next(error);
   }
 };
@@ -246,6 +330,15 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
     const { password, newEmail } = req.body;
  
     const user = await User.findById(userId);
+
+    if (
+      typeof newEmail !== "string" ||
+      typeof password !== "string" ||
+      !newEmail ||
+      !password
+    ) {
+      throw new CustomError("Email reset failed", 400);
+    }
 
     //Check the user entered the correct password when attempting to save a new one
     if (!(await comparePasswords(password, user.password))) {
@@ -265,6 +358,13 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
     await resetToken.save();
 
     const resend = new Resend(process.env.RESEND_API_KEY);
+    let email;
+
+    if (process.env.NODE_ENV === "test") {
+      email = "delivered@resend.dev";
+    } else {
+      email = "claire.castanet@outlook.com";
+    }
 
     //Send an email to the new user email, and generate a reset token for now.
     //Log-out the user on all devices (i.e delete any associated user refresh tokens)
@@ -272,7 +372,7 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
     //TODO - add link to the button to make this fully functional
     const { data, error } = await resend.emails.send({
       from: "Acme <onboarding@resend.dev>",
-      to: ["claire.castanet@outlook.com"],
+      to: [`${email}`],
       subject: "hello world",
       html: "<body style='background-color:#e3d9cf;color:rgb(73,67,62)'><div style='display:flex;flex-direction:column;'><div style='background-color:#42582f;color:white;border-radius:0px 0px 10px 10px;padding:1.5em 1.5em 1.5em 1.5em;display:flex;'><img src='placeholder' alt='Logo' width='1.5em' height='1.5em'/><h3 style='margin-left:0.5em'>Raglan Generator</h3></div><div style='border-radius:10px;box-shadow:0px 0px 5px 1px #d6d1d1;background-color:white;align-self:center;margin-top:1em;padding-right:1em;padding-left:1em;display:flex;flex-direction:column;'><h2 style='text-align:center;'>We received an e-mail change request.</h2><p>To confirm the change and set 'EMAIL' as your new Raglan Generator account e-mail, please click the button below:</p><button style='padding:0.55em 0.55em 0.55em 0.55em;text-decoration:none;font-size:medium;border-radius:12px;border:0px;background-color:rgb(126,70,136);color:white;align-self:center;'>Confirm new e-mail</button><p>If you did not make this request, you can reach out to support <a>here.</a></p></div></div></body>",
     });
@@ -303,9 +403,13 @@ const activateNewEmail = async (req, res, next) => {
       //Might even need to limit attempts amount?
     }
 
+    if (typeof userId !== "string") {
+       throw new CustomError("Could not activate new e-mail", 401);
+    }
+
     const hashedResetToken = hashToken(resetToken);
 
-    /*Immediately invalidate the used token in the database*/
+    //Immediately invalidate the used token in the database
     const storedResetToken = await ResetToken.findOneAndUpdate(
       {
         tokenHash: hashedResetToken,
@@ -314,7 +418,7 @@ const activateNewEmail = async (req, res, next) => {
       { used: true },
     );
 
-    /*If the token I just attempted to invalidate was either non-existent in the be or already used, prevent operation*/
+    //If the token I just attempted to invalidate was either non-existent in the be or already used, prevent operation
     if (
       !storedResetToken ||
       storedResetToken.used ||
@@ -323,24 +427,34 @@ const activateNewEmail = async (req, res, next) => {
       throw new CustomError("Could not activate new e-mail", 401);
     }
 
-    /*Set the value of the email field in the user to the pending e-mail requested.*/
-    const user = await User.findOneAndUpdate({ _id: userId }, { email: storedResetToken.pendingEmail });
+    //Set the value of the email field in the user to the pending e-mail requested.
+    const user = await User.findOneAndUpdate(
+      { _id: userId },
+      { email: storedResetToken.pendingEmail },
+    );
 
     if (!user) {
-       throw new CustomError("Could not activate new e-mail", 401);
+      throw new CustomError("Could not activate new e-mail", 401);
     }
 
-    /*Issue user new access and refresh tokens.
-    * EDGE CASE: Invalidate any leftover refresh tokens if they exist on the system 
-    * (they shouldn't be, but worth making sure they are all 100% invalidated)*/
+    /*
+     * Issue user new access and refresh tokens.
+     *
+     * EDGE CASE:
+     * Invalidate any leftover refresh tokens if they exist on the system
+     * (they shouldn't be, but worth making sure they are all 100% invalidated)
+     * */
     await RefreshToken.updateMany({ user: userId }, { blacklisted: true });
 
     const refreshToken = generateRefreshToken(userId);
     const accessToken = generateAccessToken(userId);
     const hashedRefreshToken = hashToken(refreshToken);
 
-    /* Check if device is known to my system, and if not, generate a device id to pair up with the refresh token in db.
-     * If known, pair up with new refresh cookie that I am issuing. If device is not known, create new tracking*/
+    /*
+     * Check if device is known to my system:
+     * Case 1: if unnkown, generate a device id to pair up with the refresh token in db.
+     * Case 2: if known, pair up with new refresh cookie that I am issuing.
+     */
     let deviceId = req.cookies?.DEVICE_ID;
 
     if (!deviceId) {
@@ -361,39 +475,84 @@ const activateNewEmail = async (req, res, next) => {
       deviceIdHash: hashedDeviceId,
     }).save();
 
-     res.cookie("ACCESS_TOKEN", accessToken, {
-       httpOnly: true,
-       sameSite: "Lax",
-       maxAge: DURATIONS.FIFTEEN_MINUTES,
-     });
+    res.cookie("ACCESS_TOKEN", accessToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      maxAge: DURATIONS.FIFTEEN_MINUTES,
+    });
 
-     res.cookie("REFRESH_TOKEN", refreshToken, {
-       httpOnly: true,
-       sameSite: "Lax",
-       maxAge: DURATIONS.THIRTY_DAYS,
-     });
-    
+    res.cookie("REFRESH_TOKEN", refreshToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      maxAge: DURATIONS.THIRTY_DAYS,
+    });
+
     res.status(201).json({ message: "New user e-mail activated" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const requestForgottenPasswordReset = async (req, res, next) => {
+  try {
+    let { email } = req.body;
+
+    if (!email || typeof email !== "string") {
+      throw new CustomError("Could not validate password request", 400);
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new CustomError("Could not validate password request", 400);
+    }
+
+    //Generate one time reset token, hash and store it for later verification
+    const rawResetToken = createSecureRawToken();
+    const hashedResetToken = hashToken(rawResetToken);
+
+    await new ResetToken({
+      user: user._id,
+      tokenHash: hashedResetToken,
+    }).save();
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    if (process.env.NODE_ENV === "test") {
+      email = "delivered@resend.dev";
+    } else {
+      //in development, in prod will change the following
+      email = "claire.castanet@outlook.com";
+    }
+
+    //Send an email to the new user email, and generate a reset token for now.
+    //Log-out the user on all devices (i.e delete any associated user refresh tokens)
+    //TODO - could also potentially send another e-mail to old address to notify of change
+    //TODO - add link to the button to make this fully functional
+    //TODO - format the email nively for password reset
+    const { data, error } = await resend.emails.send({
+      from: "Acme <onboarding@resend.dev>",
+      to: [`${email}`],
+      subject: "hello world",
+      html: "<body style='background-color:#e3d9cf;color:rgb(73,67,62)'><div style='display:flex;flex-direction:column;'><div style='background-color:#42582f;color:white;border-radius:0px 0px 10px 10px;padding:1.5em 1.5em 1.5em 1.5em;display:flex;'><img src='placeholder' alt='Logo' width='1.5em' height='1.5em'/><h3 style='margin-left:0.5em'>Raglan Generator</h3></div><div style='border-radius:10px;box-shadow:0px 0px 5px 1px #d6d1d1;background-color:white;align-self:center;margin-top:1em;padding-right:1em;padding-left:1em;display:flex;flex-direction:column;'><h2 style='text-align:center;'>We received an e-mail change request.</h2><p>To confirm the change and set 'EMAIL' as your new Raglan Generator account e-mail, please click the button below:</p><button style='padding:0.55em 0.55em 0.55em 0.55em;text-decoration:none;font-size:medium;border-radius:12px;border:0px;background-color:rgb(126,70,136);color:white;align-self:center;'>Confirm new e-mail</button><p>If you did not make this request, you can reach out to support <a>here.</a></p></div></div></body>",
+    });
+
+    if (error) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+    res.status(201).json({ message: "Forgotten password change successfully requested" });
   } catch (error) {
     console.log(error)
     next(error);
   }
 };
 
-//will need a flow that involves email here
-const requestForgottenPasswordReset = () => { 
-
-}
-
-const resetForgottenPassword = () => {
-  
-}
-
 module.exports = {
   refreshSession,
   signInUser,
   signOutUser,
-  resetLoggedInUserPassword,
+  resetUserPassword,
   requestResetLoggedInUserEmail,
   activateNewEmail,
+  requestForgottenPasswordReset,
 };

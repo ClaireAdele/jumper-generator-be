@@ -1,7 +1,11 @@
-const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
+
+const JWT = require("jsonwebtoken");
+const crypto = require("crypto")
 const mongoose = require("mongoose");
+
 const { CustomError } = require("../errorHandling/customError");
+const { DURATIONS } = require("./constants");
 
 exports.generateAccessToken = (userId) => {
   try {
@@ -9,15 +13,17 @@ exports.generateAccessToken = (userId) => {
         throw new CustomError("Invalid user ID format", 401);
     }
 
+    const nowInMs = Date.now();
+
     return JWT.sign(
       {
         user_id: userId,
-        iat: Math.floor(Date.now() / 1000),
-
-        exp: Math.floor(Date.now() / 1000) + 10 * 60, 
+        iat: nowInMs,
+        exp: nowInMs + DURATIONS.FIFTEEN_MINUTES, 
+        nonce: crypto.randomBytes(8).toString("hex"),
       },
       secret,
-      { algorithm: "HS256" } // Explicitly define a strong algorithm
+      { algorithm: "HS256" }, // Explicitly define a strong algorithm
     );
   } catch (error) {
     console.log("Error generating token:", error);
@@ -31,14 +37,14 @@ exports.generateRefreshToken = (userId) => {
       throw new CustomError("Invalid user ID format", 401);
     }
 
-    const nowInSeconds = Math.floor(Date.now() / 1000);
-    const ONE_MONTH = 30 * 24 * 60 * 60; // 30 days in seconds
+    const nowInMs = Date.now();
 
     return JWT.sign(
       {
         user_id: userId,
-        iat: nowInSeconds,
-        exp: nowInSeconds + ONE_MONTH, // expires in 30 days
+        iat: nowInMs,
+        exp: nowInMs + DURATIONS.ONE_MONTH, // expires in 30 days
+        nonce: crypto.randomBytes(8).toString("hex"),
       },
       secret,
       { algorithm: "HS256" }, // Explicitly define a strong algorithm
