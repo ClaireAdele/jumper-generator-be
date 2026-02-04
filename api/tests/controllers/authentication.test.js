@@ -217,6 +217,32 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
       expect(blacklistedRefreshToken.blacklisted).toBe(true);
     });
 
+    test("When the user signs out successfully but has more than one session active (multiple devices in use), only the refresh token associated with this current device is blacklisted", async () => {
+      const secondSession = new RefreshToken({
+        user: user._id,
+        tokenHash: "mockHash",
+        deviceIdHash: "mockHash",
+      });
+
+      await secondSession.save()
+
+      await request(app)
+        .post("/api/authentication/sign-out-user")
+        .set("Cookie", cookie);
+
+      const userRefreshTokenList = await RefreshToken.find({
+        user: user._id,
+      });
+
+      userRefreshTokenList.map((refreshToken) => {
+        if (refreshToken.tokenHash !== "mockHash") {
+          expect(refreshToken.blacklisted).toBe(true);
+        } else {
+          expect(refreshToken.blacklisted).toBe(false);
+        }
+      });
+    });
+
     test("When there is no active session, the user cannot log-out", async () => {
       const response = await request(app)
         .post("/api/authentication/sign-out-user")
