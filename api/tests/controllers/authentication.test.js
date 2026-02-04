@@ -2,15 +2,19 @@ const app = require("../../app");
 const request = require("supertest");
 
 const User = require("../../models/users");
-const RefreshToken = require("../../models/RefreshToken");
-const ResetToken = require("../../models/ResetToken");
+const RefreshToken = require("../../models/RefreshTokens");
+const ResetToken = require("../../models/ResetTokens");
 
-const { hashPassword, comparePasswords, hashToken, createSecureRawToken } = require("../../utils/hashing_utils");
+const {
+  hashPassword,
+  comparePasswords,
+  hashToken,
+  createSecureRawToken,
+} = require("../../utils/hashing_utils");
 const { DURATIONS } = require("../../utils/constants");
 
 const { ObjectId } = require("mongodb");
 require("../../mongodb_helper");
-
 
 describe("TESTS FOR /authentication ENDPOINT", () => {
   describe("POST - signInUser", () => {
@@ -224,7 +228,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         deviceIdHash: "mockHash",
       });
 
-      await secondSession.save()
+      await secondSession.save();
 
       await request(app)
         .post("/api/authentication/sign-out-user")
@@ -419,7 +423,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
       const resetToken = new ResetToken({
         user: user._id,
         tokenHash: hashedresetToken,
-        used: true
+        used: true,
       });
 
       await resetToken.save();
@@ -453,7 +457,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         user: user._id,
         tokenHash: hashedresetToken,
         used: true,
-        expired: Date.now() - DURATIONS.FIFTEEN_MINUTES
+        expired: Date.now() - DURATIONS.FIFTEEN_MINUTES,
       });
 
       await resetToken.save();
@@ -886,42 +890,42 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
       await user.save();
     });
 
-     afterEach(async () => {
-       await User.deleteMany();
-       await ResetToken.deleteMany();
-     });
-    
+    afterEach(async () => {
+      await User.deleteMany();
+      await ResetToken.deleteMany();
+    });
+
     test("When the e-mail is associated to a user in the database, an e-mail is sent to this user to confirm the password change request and a reset token is issued", async () => {
       const response = await request(app)
         .post("/api/authentication/password-reset-forgotten-password-request")
         .send({ email: "auth_test@email.com" });
-      
+
       expect(response.body).toEqual({
         message: "Forgotten password change successfully requested",
       });
       expect(response.status).toBe(201);
 
       //This user should now have an unused reset token associated in the db
-      const resetToken = await ResetToken.findOne({ user: user._id })
+      const resetToken = await ResetToken.findOne({ user: user._id });
       expect(resetToken).toBeTruthy();
       expect(resetToken.used).toBe(false);
     });
 
-     test("When the email is not associated to a user in the db, the server responds with an error", async () => {
-       const response = await request(app)
-         .post("/api/authentication/password-reset-forgotten-password-request")
-         .send({ email: "wrong@email.com" });
+    test("When the email is not associated to a user in the db, the server responds with an error", async () => {
+      const response = await request(app)
+        .post("/api/authentication/password-reset-forgotten-password-request")
+        .send({ email: "wrong@email.com" });
 
-       expect(response.body).toEqual({
-         message: "Could not validate password request",
-       });
-       expect(response.status).toBe(400);
-     });
-    
+      expect(response.body).toEqual({
+        message: "Could not validate password request",
+      });
+      expect(response.status).toBe(400);
+    });
+
     test("When the email is not a string, the server responds with an error", async () => {
       const response = await request(app)
         .post("/api/authentication/password-reset-forgotten-password-request")
-        .send({ email: {wrongemail: "wrongEmail"} });
+        .send({ email: { wrongemail: "wrongEmail" } });
 
       expect(response.body).toEqual({
         message: "Could not validate password request",

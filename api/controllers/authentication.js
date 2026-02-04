@@ -1,13 +1,21 @@
 const User = require("../models/users");
-const RefreshToken = require("../models/RefreshToken");
-const ResetToken = require("../models/ResetToken")
+const RefreshToken = require("../models/RefreshTokens");
+const ResetToken = require("../models/ResetTokens");
 
 const { CustomError } = require("../errorHandling/customError");
 const { Resend } = require("resend");
 const JWT = require("jsonwebtoken");
 
-const { comparePasswords, hashPassword, hashToken, createSecureRawToken } = require("../utils/hashing_utils");
-const { generateAccessToken, generateRefreshToken } = require("../utils/jwt_token_utils");
+const {
+  comparePasswords,
+  hashPassword,
+  hashToken,
+  createSecureRawToken,
+} = require("../utils/hashing_utils");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../utils/jwt_token_utils");
 const { DURATIONS } = require("../utils/constants");
 
 const refreshSession = async (req, res, next) => {
@@ -24,12 +32,11 @@ const refreshSession = async (req, res, next) => {
     try {
       payload = JWT.verify(refreshToken, process.env.JWT_SECRET);
     } catch (err) {
-
       /*
-      * EDGE CASE: 
-      * if for some reason the token is invalid/expired but hasn't been purged from my db, blacklist on the spot.
-      */
-      
+       * EDGE CASE:
+       * if for some reason the token is invalid/expired but hasn't been purged from my db, blacklist on the spot.
+       */
+
       const hashedRefreshToken = hashToken(refreshToken);
       await RefreshToken.findOneAndUpdate(
         {
@@ -46,18 +53,25 @@ const refreshSession = async (req, res, next) => {
     const hashedDeviceId = hashToken(deviceId);
 
     //Atomic operation to avoid competing requests - storedToken will evaluate to the document before it's blacklisted
-    const storedToken = await RefreshToken.findOneAndUpdate({
-      tokenHash: hashedRefreshToken,
-      user: payload.user_id,
-      deviceIdHash: hashedDeviceId
-    }, { blacklisted: true });
-    
-    /* 
-    * Case 1: A hacker might be using a refreshToken that has been deleted from my db mistakenly but is still technically valid.
-    * Case 2: If the refresh token is blacklisted, don't grant a new access token.
-    * Case 3: The refresh token is expired but has yet to be expunged from the db.
-    */
-    if (!storedToken || storedToken.blacklisted || storedToken.expiresAt < Date.now()) {
+    const storedToken = await RefreshToken.findOneAndUpdate(
+      {
+        tokenHash: hashedRefreshToken,
+        user: payload.user_id,
+        deviceIdHash: hashedDeviceId,
+      },
+      { blacklisted: true },
+    );
+
+    /*
+     * Case 1: A hacker might be using a refreshToken that has been deleted from my db mistakenly but is still technically valid.
+     * Case 2: If the refresh token is blacklisted, don't grant a new access token.
+     * Case 3: The refresh token is expired but has yet to be expunged from the db.
+     */
+    if (
+      !storedToken ||
+      storedToken.blacklisted ||
+      storedToken.expiresAt < Date.now()
+    ) {
       throw new CustomError("Could not identify user", 401);
     }
 
@@ -183,7 +197,7 @@ const signInUser = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
+};
 
 const signOutUser = async (req, res, next) => {
   try {
@@ -194,16 +208,19 @@ const signOutUser = async (req, res, next) => {
       throw new CustomError("No active session found", 400);
     }
 
-   /*
-    *Clear refresh tokens for associated device - there should only be the one, 
-    * but better blacklist any extra if they happen to be there
-    */
+    /*
+     *Clear refresh tokens for associated device - there should only be the one,
+     * but better blacklist any extra if they happen to be there
+     */
     const hashedDeviceId = hashToken(deviceId);
-  
-    await RefreshToken.updateMany({
-      user: req.userId,
-      deviceIdHash: hashedDeviceId,
-    }, { blacklisted: true });
+
+    await RefreshToken.updateMany(
+      {
+        user: req.userId,
+        deviceIdHash: hashedDeviceId,
+      },
+      { blacklisted: true },
+    );
 
     //Clear access token
     res.clearCookie("ACCESS_TOKEN", {
@@ -219,9 +236,9 @@ const signOutUser = async (req, res, next) => {
 
     res.status(200).json({ message: "Signed out successfully" });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 const resetUserPassword = async (req, res, next) => {
   try {
@@ -287,13 +304,13 @@ const resetUserPassword = async (req, res, next) => {
 
     const hashedDeviceId = hashToken(deviceId);
 
-    /*  
-    * Case 1: User is already logged-in and reset password from their profile: 
-    * -> Log-out the user from all other sessions on other devices but maintain this session:
-    *  
-    * Case 2: User is not logged in on this device, and is doing a forgotten password operation:
-    * -> Log-out user from all sessions and don't re-issue access token
-    */
+    /*
+     * Case 1: User is already logged-in and reset password from their profile:
+     * -> Log-out the user from all other sessions on other devices but maintain this session:
+     *
+     * Case 2: User is not logged in on this device, and is doing a forgotten password operation:
+     * -> Log-out user from all sessions and don't re-issue access token
+     */
 
     if (!resetToken) {
       await RefreshToken.updateMany(
@@ -309,10 +326,7 @@ const resetUserPassword = async (req, res, next) => {
         maxAge: DURATIONS.FIFTEEN_MINUTES,
       });
     } else {
-      await RefreshToken.updateMany(
-        { user: userId, },
-        { blacklisted: true },
-      );
+      await RefreshToken.updateMany({ user: userId }, { blacklisted: true });
     }
 
     /*Send response with success message*/
@@ -326,7 +340,7 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
   try {
     const userId = req.userId;
     const { password, newEmail } = req.body;
- 
+
     const user = await User.findById(userId);
 
     if (
@@ -350,7 +364,7 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
     const resetToken = new ResetToken({
       user: userId,
       tokenHash: hashedResetToken,
-      pendingEmail: newEmail
+      pendingEmail: newEmail,
     });
 
     await resetToken.save();
@@ -376,7 +390,7 @@ const requestResetLoggedInUserEmail = async (req, res, next) => {
     });
 
     if (error) {
-      throw new CustomError(error.message, error.statusCode)
+      throw new CustomError(error.message, error.statusCode);
     }
 
     //Here I will blacklist all associated users refresh token
@@ -402,7 +416,7 @@ const activateNewEmail = async (req, res, next) => {
     }
 
     if (typeof userId !== "string") {
-       throw new CustomError("Could not activate new e-mail", 401);
+      throw new CustomError("Could not activate new e-mail", 401);
     }
 
     const hashedResetToken = hashToken(resetToken);
@@ -538,7 +552,9 @@ const requestForgottenPasswordReset = async (req, res, next) => {
     if (error) {
       throw new CustomError(error.message, error.statusCode);
     }
-    res.status(201).json({ message: "Forgotten password change successfully requested" });
+    res
+      .status(201)
+      .json({ message: "Forgotten password change successfully requested" });
   } catch (error) {
     next(error);
   }
