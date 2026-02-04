@@ -233,7 +233,7 @@ const resetUserPassword = async (req, res, next) => {
     if (!newPassword || (!resetToken && !oldPassword)) {
       throw new CustomError("Password reset failed", 400);
     }
-    
+
     //If it's a forgotten password scenario, I need to validate the reset token before proceeding to the db reset
     if (resetToken) {
       const { resetToken } = req.body;
