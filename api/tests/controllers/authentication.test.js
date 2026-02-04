@@ -251,6 +251,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
 
     afterEach(async () => {
       await User.deleteMany();
+      await ResetToken.deleteMany();
       await RefreshToken.deleteMany();
     });
 
@@ -343,6 +344,137 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
           expect(refreshToken.blacklisted).toBe(false);
         }
       });
+    });
+
+    test("If a user is trying to reset a forgotten password and have a valid reset token, they should be able to do so. Once used, the token should be blacklisted", async () => {
+      const token = createSecureRawToken();
+      const hashedresetToken = hashToken(token);
+
+      const resetToken = new ResetToken({
+        user: user._id,
+        tokenHash: hashedresetToken,
+      });
+
+      await resetToken.save();
+
+      const response = await request(app)
+        .patch("/api/authentication/password-reset-forgotten-password")
+        .send({
+          newPassword: "newPassword",
+          resetToken: token,
+        });
+
+      expect(response.body).toEqual({
+        message: "User password updated successfully",
+      });
+      expect(response.status).toBe(201);
+
+      //Check the password was updated in the db
+      const updatedUser = await User.findById(user._id);
+      const isPasswordChanged = await comparePasswords(
+        "newPassword",
+        updatedUser.password,
+      );
+      expect(isPasswordChanged).toBeTruthy();
+
+      //Check the token has been marked as used
+      const updatedResetToken = await ResetToken.findOne({
+        user: user._id,
+        tokenHash: hashedresetToken,
+      });
+
+      expect(updatedResetToken.used).toBe(true);
+    });
+
+    test("If the reset token has already been used to reset a password before, the operation should be denied", async () => {
+      const token = createSecureRawToken();
+      const hashedresetToken = hashToken(token);
+
+      const resetToken = new ResetToken({
+        user: user._id,
+        tokenHash: hashedresetToken,
+        used: true
+      });
+
+      await resetToken.save();
+
+      const response = await request(app)
+        .patch("/api/authentication/password-reset-forgotten-password")
+        .send({
+          newPassword: "newPassword",
+          resetToken: token,
+        });
+
+      expect(response.body).toEqual({
+        message: "Could not authorise password reset",
+      });
+      expect(response.status).toBe(400);
+
+      //Check the password was not updated in the db
+      const updatedUser = await User.findById(user._id);
+      const isPasswordChanged = await comparePasswords(
+        "newPassword",
+        updatedUser.password,
+      );
+      expect(isPasswordChanged).toBeFalsy();
+    });
+
+    test("If the reset token is expired in the db, the operation should be denied", async () => {
+      const token = createSecureRawToken();
+      const hashedresetToken = hashToken(token);
+
+      const resetToken = new ResetToken({
+        user: user._id,
+        tokenHash: hashedresetToken,
+        used: true,
+        expired: Date.now() - DURATIONS.FIFTEEN_MINUTES
+      });
+
+      await resetToken.save();
+
+      const response = await request(app)
+        .patch("/api/authentication/password-reset-forgotten-password")
+        .send({
+          newPassword: "newPassword",
+          resetToken: token,
+        });
+
+      expect(response.body).toEqual({
+        message: "Could not authorise password reset",
+      });
+      expect(response.status).toBe(400);
+
+      //Check the password was not updated in the db
+      const updatedUser = await User.findById(user._id);
+      const isPasswordChanged = await comparePasswords(
+        "newPassword",
+        updatedUser.password,
+      );
+      expect(isPasswordChanged).toBeFalsy();
+    });
+
+    test("If the reset token doesn't exist in the db, the operation should be denied", async () => {
+      const token = createSecureRawToken();
+
+      const response = await request(app)
+        .patch("/api/authentication/password-reset-forgotten-password")
+        .send({
+          newPassword: "newPassword",
+          resetToken: token,
+        });
+
+      expect(response.body).toEqual({
+        message: "Could not authorise password reset",
+      });
+      expect(response.status).toBe(400);
+
+      //Check the password was not updated in the db
+      const updatedUser = await User.findById(user._id);
+      const isPasswordChanged = await comparePasswords(
+        "newPassword",
+        updatedUser.password,
+      );
+      expect(isPasswordChanged).toBeFalsy();
     });
   });
 
@@ -658,7 +790,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         .post("/api/authentication/email-reset-request-authenticated-user")
         .send({
           password: "password",
-          newEmail: "newEmail@mail.com",
+          newEmail: "newemail@mail.com",
         })
         .set("Cookie", cookie);
 
@@ -667,7 +799,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
 
       //Check that the resetToken has been created successfully
       const [resetToken] = await ResetToken.find({ user: user._id });
-      expect(resetToken.pendingEmail).toEqual("newEmail@mail.com");
+      expect(resetToken.pendingEmail).toEqual("newemail@mail.com");
     });
 
     test("If the user fails the password check, they are prevented from requesting an e-mail change and no reset tokens are created for that user", async () => {
@@ -675,7 +807,7 @@ describe("TESTS FOR /authentication ENDPOINT", () => {
         .post("/api/authentication/email-reset-request-authenticated-user")
         .send({
           password: "wrongPassword",
-          newEmail: "newEmail@mail.com",
+          newEmail: "newemail@mail.com",
         })
         .set("Cookie", cookie);
 

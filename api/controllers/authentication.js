@@ -236,8 +236,6 @@ const resetUserPassword = async (req, res, next) => {
 
     //If it's a forgotten password scenario, I need to validate the reset token before proceeding to the db reset
     if (resetToken) {
-      const { resetToken } = req.body;
-
       const hashedResetToken = hashToken(resetToken);
 
       //Immediately invalidate the used token in the database
@@ -542,7 +540,6 @@ const requestForgottenPasswordReset = async (req, res, next) => {
     }
     res.status(201).json({ message: "Forgotten password change successfully requested" });
   } catch (error) {
-    console.log(error)
     next(error);
   }
 };

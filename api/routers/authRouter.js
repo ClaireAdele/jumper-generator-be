@@ -21,7 +21,7 @@ authRouter.patch(
 authRouter.post("/email-reset-request-authenticated-user", tokenChecker, requestResetLoggedInUserEmail);
 authRouter.patch("/email-reset-activate-new-email/:userId", activateNewEmail);
 authRouter.post("/password-reset-forgotten-password-request", requestForgottenPasswordReset);
-authRouter.patch("/password-reset-forgotten-password/:userId", resetUserPassword);
+authRouter.patch("/password-reset-forgotten-password", resetUserPassword);
 
 
 authRouter.use("/", handleInvalidMethod);
