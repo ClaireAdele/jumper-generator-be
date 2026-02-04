@@ -2,7 +2,8 @@ const { CustomError } = require("../errorHandling/customError");
 const User = require("../models/users");
 const Pattern = require("../models/patterns");
 const { validatePatternData } = require("../utils/data_validation");
-const { generateToken } = require("../utils/jwt_token_utils");
+const { generateAccessToken } = require("../utils/jwt_token_utils");
+const { DURATIONS } = require("../utils/constants");
 
 const savePattern = async (req, res, next) => {
   const _id = req.userId;
@@ -67,12 +68,12 @@ const savePattern = async (req, res, next) => {
     
     await pattern.save();
 
-    const token = generateToken(_id);
+    const token = generateAccessToken(_id);
 
-    res.cookie("token", token, {
+    res.cookie("ACCESS_TOKEN", token, {
       httpOnly: true,
       sameSite: "Lax",
-      maxAge: 1000 * 10 * 60,
+      maxAge: DURATIONS.FIFTEEN_MINUTES,
     });
 
     res
@@ -94,12 +95,12 @@ const getPatternById = async (req, res, next) => {
       throw new CustomError("Pattern does not exist", 404);
     }
     
-    const token = generateToken(userId);
+    const token = generateAccessToken(userId);
 
-    res.cookie("token", token, {
+    res.cookie("ACCESS_TOKEN", token, {
       httpOnly: true,
       sameSite: "Lax",
-      maxAge: 1000 * 10 * 60,
+      maxAge: DURATIONS.FIFTEEN_MINUTES,
     });
 
     res.status(200).json({ message: `Pattern ${pattern._id} found`, pattern });
@@ -114,12 +115,12 @@ const getPatternsByUser = async (req, res, next) => {
   try {
     const patterns = await Pattern.find({ user: userId });
 
-    const token = generateToken(userId);
+    const token = generateAccessToken(userId);
 
-    res.cookie("token", token, {
+    res.cookie("ACCESS_TOKEN", token, {
       httpOnly: true,
       sameSite: "Lax",
-      maxAge: 1000 * 10 * 60,
+      maxAge: DURATIONS.FIFTEEN_MINUTES,
     });
 
     res.status(200).json({ message: `Patterns for user ${userId} found`, patterns });
@@ -135,12 +136,12 @@ const deletePatternById = async (req, res, next) => {
   try {
     const isPatternDeleted = await Pattern.deleteOne({ _id: patternId });
 
-    const token = generateToken(userId);
+    const token = generateAccessToken(userId);
 
-    res.cookie("token", token, {
+    res.cookie("ACCESS_TOKEN", token, {
       httpOnly: true,
       sameSite: "Lax",
-      maxAge: 1000 * 10 * 60,
+      maxAge: DURATIONS.FIFTEEN_MINUTES,
     });
 
     if (isPatternDeleted.deletedCount == 1) {

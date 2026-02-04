@@ -1,17 +1,18 @@
 const JWT = require("jsonwebtoken");
+const { CustomError } = require("../errorHandling/customError");
 
-// TODO: refactor with Try/Catch to improve this here
 const tokenChecker = (req, res, next) => {
-  const token = req.cookies?.token;
+  try {
+    const token = req.cookies?.ACCESS_TOKEN;
 
-  JWT.verify(token, process.env.JWT_SECRET, (err, payload) => {
-    if (err) {
-      res.status(401).json({ message: "Could not verify token" });
-    } else {
-      req.userId = payload.user_id;
-      next();
-    }
-  });
-};
+    const payload = JWT.verify(token, process.env.JWT_SECRET);
+    req.userId = payload.user_id;
+    next();
+  
+  } catch {
+    const error = new CustomError("Could not identify user", 401);
+    next(error);
+  }
+}
 
 module.exports = tokenChecker;

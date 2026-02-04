@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 exports.hashPassword = async (password) => {
   const salt = await bcrypt.genSalt(10);
@@ -10,4 +11,19 @@ exports.comparePasswords = async (inputPassword, userPassword) => {
   const passwordsMatch = await bcrypt.compare(inputPassword, userPassword);
 
   return passwordsMatch;
+}
+
+exports.createSecureRawToken = () => {
+  const rawToken = crypto.randomBytes(32).toString("hex");
+
+  return rawToken;
+}
+
+exports.hashToken = (rawToken) => {
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(rawToken)
+    .digest("hex");
+  
+  return tokenHash;
 }
