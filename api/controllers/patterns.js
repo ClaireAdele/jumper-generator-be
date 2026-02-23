@@ -25,8 +25,7 @@ const savePattern = async (req, res, next) => {
   } = req.body;
 
   try {
-    //TODO - EDGE CASE - patternName is an empty string or contains lots of empty characters
-    if (!patternName) {
+    if (!patternName || patternName.trim().length === 0) {
       throw new CustomError("Missing required field: patternName", 400);
     }
 
